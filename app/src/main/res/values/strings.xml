@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Learning Platform</string>
+
+    <!-- Navigation -->
+    <string name="nav_home">Home</string>
+    <string name="nav_study_paths">Study Paths</string>
+    <string name="nav_profile">Profile</string>
+    <string name="nav_search">Search</string>
+
+    <!-- Study Path -->
+    <string name="create_study_path">Create Study Path</string>
+    <string name="study_path_topic_hint">Enter topic (e.g., Machine Learning)</string>
+    <string name="study_path_level">Select Level</string>
+    <string name="level_beginner">Beginner</string>
+    <string name="level_intermediate">Intermediate</string>
+    <string name="level_advanced">Advanced</string>
+
+    <!-- Module -->
+    <string name="module_take_quiz">Take Quiz</string>
+    <string name="module_mark_complete">Mark as Complete</string>
+    <string name="module_play_audio">Play Audio</string>
+
+    <!-- Quiz -->
+    <string name="quiz_submit">Submit Quiz</string>
+    <string name="quiz_question">Question %1$d</string>
+    <string name="quiz_result_passed">Passed!</string>
+    <string name="quiz_result_failed">Keep Trying!</string>
+    <string name="quiz_review_answers">Review Answers</string>
+
+    <!-- Common -->
+    <string name="loading">Loading…</string>
+    <string name="error_occurred">An error occurred</string>
+    <string name="retry">Retry</string>
+    <string name="back">Back</string>
+    <string name="continue_text">Continue</string>
+</resources>
+

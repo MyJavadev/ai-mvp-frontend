@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+        Tema minimalista para Compose.
+        Todos los colores y estilos se manejan en Compose Theme (Theme.kt)
+    -->
+    <style name="Theme.LearningApp" parent="android:Theme.Material.Light.NoActionBar" />
+</resources>
+
