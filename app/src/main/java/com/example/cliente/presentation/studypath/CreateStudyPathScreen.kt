@@ -31,11 +31,11 @@ fun CreateStudyPathScreen(
 
     Scaffold(
         topBar = {
+            TopAppBar(
                 title = { Text(Strings.CREATE_STUDY_PATH) },
-                title = { Text("Create Study Path") },
                 navigationIcon = {
+                    IconButton(onClick = onNavigateBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = Strings.BACK)
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
                     }
                 }
             )

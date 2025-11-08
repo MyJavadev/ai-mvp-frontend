@@ -37,7 +37,7 @@ fun StudyPathDetailScreen(
                 title = { Text(studyPath?.topic ?: "Study Path") },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = Strings.BACK)
                     }
                 }
             )
@@ -124,7 +124,7 @@ fun ModuleCard(
                 imageVector = if (module.isCompleted) {
                     Icons.Default.CheckCircle
                 } else {
-                    Icons.Default.RadioButtonUnchecked
+                    Icons.Outlined.Circle
                 },
                 contentDescription = null,
                 tint = if (module.isCompleted) {
