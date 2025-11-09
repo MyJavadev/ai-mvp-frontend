@@ -1,7 +1,6 @@
 package com.example.cliente.data.repository
 
-import com.example.cliente.data.model.ProgressDto
-import com.example.cliente.data.remote.ProgressApiService
+import com.example.cliente.data.remote.*
 import com.example.cliente.util.Resource
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -11,31 +10,59 @@ class ProgressRepository @Inject constructor(
     private val apiService: ProgressApiService
 ) {
 
-    fun getUserProgress(userId: String): Flow<Resource<ProgressDto>> = flow {
+    /**
+     * Marca un módulo como completado.
+     * POST /progress/modules/complete
+     */
+    fun completeModule(userId: Int, moduleId: Int): Flow<Resource<CompleteModuleResponse>> = flow {
         try {
             emit(Resource.Loading())
-            val response = apiService.getUserProgress(userId)
-            if (response.success && response.data != null) {
-                emit(Resource.Success(response.data))
-            } else {
-                emit(Resource.Error(response.error ?: "Error fetching progress"))
-            }
+            val response = apiService.completeModule(CompleteModuleRequest(userId, moduleId))
+            emit(Resource.Success(response))
         } catch (e: Exception) {
-            emit(Resource.Error(e.localizedMessage ?: "An unexpected error occurred"))
+            emit(Resource.Error(e.localizedMessage ?: "Error al completar módulo"))
         }
     }
 
-    fun getUserAchievements(userId: String): Flow<Resource<ProgressDto>> = flow {
+    /**
+     * Devuelve módulos completados y logros.
+     * GET /progress/users/:userId/progress
+     */
+    fun getUserProgress(userId: Int): Flow<Resource<UserProgressResponse>> = flow {
         try {
             emit(Resource.Loading())
-            val response = apiService.getUserAchievements(userId)
-            if (response.success && response.data != null) {
-                emit(Resource.Success(response.data))
-            } else {
-                emit(Resource.Error(response.error ?: "Error fetching achievements"))
-            }
+            val response = apiService.getUserProgress(userId)
+            emit(Resource.Success(response))
         } catch (e: Exception) {
-            emit(Resource.Error(e.localizedMessage ?: "An unexpected error occurred"))
+            emit(Resource.Error(e.localizedMessage ?: "Error al obtener progreso"))
+        }
+    }
+
+    /**
+     * Resumen rápido.
+     * GET /progress/users/:userId/dashboard
+     */
+    fun getUserDashboard(userId: Int): Flow<Resource<DashboardResponse>> = flow {
+        try {
+            emit(Resource.Loading())
+            val response = apiService.getUserDashboard(userId)
+            emit(Resource.Success(response))
+        } catch (e: Exception) {
+            emit(Resource.Error(e.localizedMessage ?: "Error al obtener dashboard"))
+        }
+    }
+
+    /**
+     * Agrega eventos clave para el usuario.
+     * GET /progress/users/:userId/timeline
+     */
+    fun getUserTimeline(userId: Int): Flow<Resource<TimelineResponse>> = flow {
+        try {
+            emit(Resource.Loading())
+            val response = apiService.getUserTimeline(userId)
+            emit(Resource.Success(response))
+        } catch (e: Exception) {
+            emit(Resource.Error(e.localizedMessage ?: "Error al obtener timeline"))
         }
     }
 }

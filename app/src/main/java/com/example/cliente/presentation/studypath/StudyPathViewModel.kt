@@ -5,12 +5,14 @@ import androidx.lifecycle.viewModelScope
 import com.example.cliente.data.model.StudyPathDto
 import com.example.cliente.data.repository.StudyPathRepository
 import com.example.cliente.util.Resource
+import com.example.cliente.util.UserPreferences
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 data class StudyPathListState(
@@ -22,12 +24,14 @@ data class StudyPathListState(
 data class CreateStudyPathState(
     val isLoading: Boolean = false,
     val studyPath: StudyPathDto? = null,
-    val error: String? = null
+    val error: String? = null,
+    val message: String? = null
 )
 
 @HiltViewModel
 class StudyPathViewModel @Inject constructor(
-    private val repository: StudyPathRepository
+    private val repository: StudyPathRepository,
+    private val userPreferences: UserPreferences
 ) : ViewModel() {
 
     private val _studyPathListState = MutableStateFlow(StudyPathListState())
@@ -39,8 +43,24 @@ class StudyPathViewModel @Inject constructor(
     private val _selectedStudyPath = MutableStateFlow<StudyPathDto?>(null)
     val selectedStudyPath: StateFlow<StudyPathDto?> = _selectedStudyPath.asStateFlow()
 
-    fun getUserStudyPaths(userId: String) {
-        repository.getUserStudyPaths(userId).onEach { result ->
+    private var currentUserId: String? = null
+
+    init {
+        // Load userId from preferences and fetch study paths automatically
+        viewModelScope.launch {
+            userPreferences.userId.collect { userId ->
+                userId?.let {
+                    currentUserId = it
+                    getUserStudyPaths(it)
+                }
+            }
+        }
+    }
+
+    fun getUserStudyPaths(userId: String? = null) {
+        val id = userId ?: currentUserId ?: return
+
+        repository.getUserStudyPaths(id).onEach { result ->
             when (result) {
                 is Resource.Success -> {
                     _studyPathListState.value = StudyPathListState(
@@ -60,7 +80,33 @@ class StudyPathViewModel @Inject constructor(
     }
 
     fun createStudyPath(topic: String, level: String) {
-        repository.createStudyPath(topic, level).onEach { result ->
+        val userId = currentUserId?.toIntOrNull() ?: return
+
+        // Primera fase: encolar la generación
+        repository.createStudyPath(topic, userId).onEach { result ->
+            when (result) {
+                is Resource.Success -> {
+                    // Obtuvimos el requestId, ahora monitorear
+                    val requestId = result.data?.requestId ?: return@onEach
+                    pollStudyPathGeneration(requestId)
+                }
+                is Resource.Error -> {
+                    _createStudyPathState.value = CreateStudyPathState(
+                        error = result.message ?: "Error creating study path"
+                    )
+                }
+                is Resource.Loading -> {
+                    _createStudyPathState.value = CreateStudyPathState(
+                        isLoading = true,
+                        message = "Encolando generación de ruta..."
+                    )
+                }
+            }
+        }.launchIn(viewModelScope)
+    }
+
+    private fun pollStudyPathGeneration(requestId: String) {
+        repository.pollStudyPathRequest(requestId).onEach { result ->
             when (result) {
                 is Resource.Success -> {
                     _createStudyPathState.value = CreateStudyPathState(
@@ -69,11 +115,14 @@ class StudyPathViewModel @Inject constructor(
                 }
                 is Resource.Error -> {
                     _createStudyPathState.value = CreateStudyPathState(
-                        error = result.message ?: "An unexpected error occurred"
+                        error = result.message ?: "Error generating study path"
                     )
                 }
                 is Resource.Loading -> {
-                    _createStudyPathState.value = CreateStudyPathState(isLoading = true)
+                    _createStudyPathState.value = CreateStudyPathState(
+                        isLoading = true,
+                        message = "Generando ruta con IA..."
+                    )
                 }
             }
         }.launchIn(viewModelScope)

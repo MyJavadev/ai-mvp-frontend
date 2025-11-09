@@ -12,10 +12,10 @@ class UserRepository @Inject constructor(
     private val apiService: UserApiService
 ) {
 
-    fun createUser(email: String, name: String): Flow<Resource<UserDto>> = flow {
+    fun createUser(username: String): Flow<Resource<UserDto>> = flow {
         try {
             emit(Resource.Loading())
-            val response = apiService.createUser(CreateUserRequest(email, name))
+            val response = apiService.createUser(CreateUserRequest(username))
             if (response.success && response.data != null) {
                 emit(Resource.Success(response.data))
             } else {

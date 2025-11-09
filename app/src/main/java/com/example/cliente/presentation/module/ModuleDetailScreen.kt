@@ -5,40 +5,57 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.VolumeUp
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Quiz
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import com.example.cliente.data.model.ModuleDto
 
+/**
+ * Pantalla de detalle de módulo según la guía de Android.
+ *
+ * Acciones disponibles:
+ * - "Escuchar" → ejecutar POST /text-to-speech
+ * - "Quiz" → consultar GET /modules/:moduleId/quiz
+ * - "Marcar completado" → POST /progress/modules/complete
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ModuleDetailScreen(
-    moduleId: String,
-    onNavigateToQuiz: () -> Unit,
-    onNavigateBack: () -> Unit
+    module: ModuleDto,
+    userId: Int,
+    onNavigateToQuiz: (Int) -> Unit,
+    onNavigateBack: () -> Unit,
+    onGenerateTTS: (Int, String) -> Unit = { _, _ -> },
+    onCompleteModule: (Int, Int) -> Unit = { _, _ -> }
 ) {
-    // Mock data - in real app, fetch from ViewModel
+    var showCompleteDialog by remember { mutableStateOf(false) }
+
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Module Details") },
+                title = { Text("Detalle del Módulo") },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
                     }
                 }
             )
         },
         floatingActionButton = {
-            ExtendedFloatingActionButton(
-                onClick = onNavigateToQuiz,
-                icon = { Icon(Icons.Default.Quiz, contentDescription = null) },
-                text = { Text("Take Quiz") }
-            )
+            if (!module.isCompleted) {
+                ExtendedFloatingActionButton(
+                    onClick = { showCompleteDialog = true },
+                    icon = { Icon(Icons.Default.CheckCircle, contentDescription = null) },
+                    text = { Text("Completar") }
+                )
+            }
         }
     ) { paddingValues ->
         Column(
@@ -48,14 +65,16 @@ fun ModuleDetailScreen(
                 .verticalScroll(rememberScrollState())
         ) {
             // Module image
-            AsyncImage(
-                model = "https://via.placeholder.com/400x200",
-                contentDescription = "Module Image",
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(200.dp),
-                contentScale = ContentScale.Crop
-            )
+            if (module.image_url != null) {
+                AsyncImage(
+                    model = module.image_url,
+                    contentDescription = "Imagen del Módulo",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp),
+                    contentScale = ContentScale.Crop
+                )
+            }
 
             Column(
                 modifier = Modifier
@@ -63,68 +82,109 @@ fun ModuleDetailScreen(
                     .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
+                // Title
                 Text(
-                    text = "Introduction to the Topic",
+                    text = module.title,
                     style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Bold
                 )
 
-                Text(
-                    text = "This module covers the fundamental concepts...",
-                    style = MaterialTheme.typography.bodyLarge
-                )
+                // Description
+                module.description?.let { desc ->
+                    Text(
+                        text = desc,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
 
                 HorizontalDivider()
 
-                // Audio player section
-                Card(
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp)
-                    ) {
+                // Subtopics
+                module.subtopics?.let { subtopics ->
+                    Column {
                         Text(
-                            text = "Listen to Audio",
+                            text = "Temas cubiertos",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.SemiBold
                         )
                         Spacer(modifier = Modifier.height(8.dp))
-                        Button(
-                            onClick = { /* Play audio */ },
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Text("Play Audio")
-                        }
+                        Text(
+                            text = subtopics,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
                     }
                 }
 
+                HorizontalDivider()
+
+                // Action buttons
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    // Audio button
+                    OutlinedButton(
+                        onClick = { onGenerateTTS(module.id, module.content) },
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Icon(Icons.AutoMirrored.Filled.VolumeUp, contentDescription = null)
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("Escuchar")
+                    }
+
+                    // Quiz button
+                    Button(
+                        onClick = { onNavigateToQuiz(module.id) },
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Icon(Icons.Default.Quiz, contentDescription = null)
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("Quiz")
+                    }
+                }
+
+                HorizontalDivider()
+
                 // Content
                 Text(
-                    text = "Detailed Content",
+                    text = "Contenido Detallado",
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
                 )
 
                 Text(
-                    text = """
-                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. 
-                        Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-                        
-                        Key Points:
-                        • Point 1
-                        • Point 2
-                        • Point 3
-                        
-                        Remember to practice these concepts regularly.
-                    """.trimIndent(),
+                    text = module.content,
                     style = MaterialTheme.typography.bodyMedium
                 )
 
                 Spacer(modifier = Modifier.height(80.dp)) // Space for FAB
             }
         }
+    }
+
+    // Complete module dialog
+    if (showCompleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showCompleteDialog = false },
+            title = { Text("Marcar como completado") },
+            text = { Text("¿Has terminado de estudiar este módulo?") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        onCompleteModule(userId, module.id)
+                        showCompleteDialog = false
+                    }
+                ) {
+                    Text("Sí, completar")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showCompleteDialog = false }) {
+                    Text("Cancelar")
+                }
+            }
+        )
     }
 }
 

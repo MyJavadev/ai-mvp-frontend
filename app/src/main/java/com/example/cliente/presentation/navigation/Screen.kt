@@ -1,6 +1,7 @@
 package com.example.cliente.presentation.navigation
 
 sealed class Screen(val route: String) {
+    object Setup : Screen("setup")
     object Home : Screen("home")
     object StudyPathList : Screen("study_path_list")
     object StudyPathDetail : Screen("study_path_detail/{pathId}") {

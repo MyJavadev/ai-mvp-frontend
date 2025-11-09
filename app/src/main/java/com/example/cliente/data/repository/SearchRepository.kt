@@ -1,8 +1,8 @@
 package com.example.cliente.data.repository
 
-import com.example.cliente.data.model.SearchRequest
-import com.example.cliente.data.model.SearchResultDto
+import com.example.cliente.data.model.ModuleDto
 import com.example.cliente.data.remote.SearchApiService
+import com.example.cliente.data.remote.SearchResultModule
 import com.example.cliente.util.Resource
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -12,31 +12,31 @@ class SearchRepository @Inject constructor(
     private val apiService: SearchApiService
 ) {
 
-    fun search(query: String, page: Int = 1, pageSize: Int = 20): Flow<Resource<SearchResultDto>> = flow {
+    /**
+     * Búsqueda semántica mediante pgvector.
+     * GET /search?q=texto
+     */
+    fun searchSemantic(query: String): Flow<Resource<List<SearchResultModule>>> = flow {
         try {
             emit(Resource.Loading())
-            val response = apiService.search(query, page, pageSize)
-            if (response.success && response.data != null) {
-                emit(Resource.Success(response.data))
-            } else {
-                emit(Resource.Error(response.error ?: "Error searching"))
-            }
+            val response = apiService.searchSemantic(query)
+            emit(Resource.Success(response))
         } catch (e: Exception) {
-            emit(Resource.Error(e.localizedMessage ?: "An unexpected error occurred"))
+            emit(Resource.Error(e.localizedMessage ?: "Error en búsqueda semántica"))
         }
     }
 
-    fun advancedSearch(request: SearchRequest): Flow<Resource<SearchResultDto>> = flow {
+    /**
+     * Búsqueda por keyword usando Typesense.
+     * GET /search/typesense?q=texto
+     */
+    fun searchTypesense(query: String): Flow<Resource<List<ModuleDto>>> = flow {
         try {
             emit(Resource.Loading())
-            val response = apiService.advancedSearch(request)
-            if (response.success && response.data != null) {
-                emit(Resource.Success(response.data))
-            } else {
-                emit(Resource.Error(response.error ?: "Error searching"))
-            }
+            val response = apiService.searchTypesense(query)
+            emit(Resource.Success(response))
         } catch (e: Exception) {
-            emit(Resource.Error(e.localizedMessage ?: "An unexpected error occurred"))
+            emit(Resource.Error(e.localizedMessage ?: "Error en búsqueda por keyword"))
         }
     }
 }

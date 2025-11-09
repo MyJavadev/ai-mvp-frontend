@@ -1,11 +1,9 @@
 package com.example.cliente.data.repository
 
-import com.example.cliente.data.model.GenerateQuizRequest
-import com.example.cliente.data.model.QuizAnswerDto
-import com.example.cliente.data.model.QuizDto
 import com.example.cliente.data.model.QuizResultDto
 import com.example.cliente.data.model.SubmitQuizRequest
 import com.example.cliente.data.remote.QuizApiService
+import com.example.cliente.data.remote.QuizWithQuestionsResponse
 import com.example.cliente.util.Resource
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -15,45 +13,45 @@ class QuizRepository @Inject constructor(
     private val apiService: QuizApiService
 ) {
 
-    fun generateQuiz(moduleId: String, numberOfQuestions: Int = 5): Flow<Resource<QuizDto>> = flow {
+    /**
+     * Encola la generación de un quiz para el módulo.
+     * POST /modules/:moduleId/quiz
+     */
+    fun generateQuiz(moduleId: Int): Flow<Resource<String>> = flow {
         try {
             emit(Resource.Loading())
-            val response = apiService.generateQuiz(GenerateQuizRequest(moduleId, numberOfQuestions))
-            if (response.success && response.data != null) {
-                emit(Resource.Success(response.data))
-            } else {
-                emit(Resource.Error(response.error ?: "Error generating quiz"))
-            }
+            val response = apiService.generateQuiz(moduleId)
+            emit(Resource.Success(response.message))
         } catch (e: Exception) {
-            emit(Resource.Error(e.localizedMessage ?: "An unexpected error occurred"))
+            emit(Resource.Error(e.localizedMessage ?: "Error al generar quiz"))
         }
     }
 
-    fun getQuiz(quizId: String): Flow<Resource<QuizDto>> = flow {
+    /**
+     * Obtiene el último quiz generado con sus preguntas.
+     * GET /modules/:moduleId/quiz
+     */
+    fun getModuleQuiz(moduleId: Int): Flow<Resource<QuizWithQuestionsResponse>> = flow {
         try {
             emit(Resource.Loading())
-            val response = apiService.getQuiz(quizId)
-            if (response.success && response.data != null) {
-                emit(Resource.Success(response.data))
-            } else {
-                emit(Resource.Error(response.error ?: "Error fetching quiz"))
-            }
+            val response = apiService.getModuleQuiz(moduleId)
+            emit(Resource.Success(response))
         } catch (e: Exception) {
-            emit(Resource.Error(e.localizedMessage ?: "An unexpected error occurred"))
+            emit(Resource.Error(e.localizedMessage ?: "Error al obtener quiz"))
         }
     }
 
-    fun submitQuiz(quizId: String, answers: List<QuizAnswerDto>): Flow<Resource<QuizResultDto>> = flow {
+    /**
+     * Registra respuestas del usuario y devuelve el puntaje.
+     * POST /quizzes/:quizId/submit
+     */
+    fun submitQuiz(quizId: Int, request: SubmitQuizRequest): Flow<Resource<QuizResultDto>> = flow {
         try {
             emit(Resource.Loading())
-            val response = apiService.submitQuiz(SubmitQuizRequest(quizId, answers))
-            if (response.success && response.data != null) {
-                emit(Resource.Success(response.data))
-            } else {
-                emit(Resource.Error(response.error ?: "Error submitting quiz"))
-            }
+            val response = apiService.submitQuiz(quizId, request)
+            emit(Resource.Success(response))
         } catch (e: Exception) {
-            emit(Resource.Error(e.localizedMessage ?: "An unexpected error occurred"))
+            emit(Resource.Error(e.localizedMessage ?: "Error al enviar quiz"))
         }
     }
 }

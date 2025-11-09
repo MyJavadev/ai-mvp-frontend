@@ -20,14 +20,12 @@ import com.example.cliente.util.Strings
 fun StudyPathListScreen(
     onNavigateToDetail: (String) -> Unit,
     onNavigateBack: () -> Unit,
+    onNavigateToCreate: () -> Unit = {},
     viewModel: StudyPathViewModel = hiltViewModel()
 ) {
     val state by viewModel.studyPathListState.collectAsState()
 
-    // Load study paths for current user (hardcoded for now)
-    LaunchedEffect(Unit) {
-        viewModel.getUserStudyPaths("user123")
-    }
+    // El ViewModel ahora carga automáticamente los study paths del usuario actual
 
     Scaffold(
         topBar = {
@@ -64,18 +62,31 @@ fun StudyPathListScreen(
                             color = MaterialTheme.colorScheme.error
                         )
                         Spacer(modifier = Modifier.height(8.dp))
-                        Button(onClick = { viewModel.getUserStudyPaths("user123") }) {
+                        Button(onClick = { viewModel.getUserStudyPaths() }) {
                             Text(Strings.RETRY)
                         }
                     }
                 }
                 state.studyPaths.isEmpty() -> {
-                    Text(
-                        text = Strings.NO_STUDY_PATHS,
-                        modifier = Modifier.align(Alignment.Center),
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                    Column(
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                            .padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = Strings.NO_STUDY_PATHS,
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Button(
+                            onClick = onNavigateToCreate
+                        ) {
+                            Text("Crear mi primera ruta")
+                        }
+                    }
                 }
                 else -> {
                     LazyColumn(

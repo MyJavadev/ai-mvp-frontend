@@ -24,7 +24,7 @@ fun CreateStudyPathScreen(
 
     LaunchedEffect(state.studyPath) {
         state.studyPath?.let { studyPath ->
-            onStudyPathCreated(studyPath.id)
+            onStudyPathCreated(studyPath.id.toString())
             viewModel.clearCreateState()
         }
     }
@@ -94,6 +94,23 @@ fun CreateStudyPathScreen(
                     color = MaterialTheme.colorScheme.error,
                     style = MaterialTheme.typography.bodySmall
                 )
+            }
+
+            if (state.message != null) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(16.dp),
+                        strokeWidth = 2.dp
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = state.message ?: "",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.weight(1f))

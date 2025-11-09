@@ -23,8 +23,8 @@ android {
             useSupportLibrary = true
         }
 
-        // Base URL for API
-        buildConfigField("String", "BASE_URL", "\"http://10.0.2.2:3000/api/\"")
+        // Base URL for API - Sin /api/ según documentación del backend
+        buildConfigField("String", "BASE_URL", "\"http://10.0.2.2:3000/\"")
     }
 
     buildTypes {

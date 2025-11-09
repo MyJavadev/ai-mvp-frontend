@@ -1,19 +1,18 @@
 package com.example.cliente.data.model
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
 data class UserDto(
-    val id: String,
-    val email: String? = null,
-    val name: String? = null,
-    val avatarUrl: String? = null,
+    val id: Int,
+    val username: String,
+    @SerialName("created_at")
     val createdAt: String? = null
 )
 
 @Serializable
 data class CreateUserRequest(
-    val email: String,
-    val name: String
+    val username: String
 )
 
