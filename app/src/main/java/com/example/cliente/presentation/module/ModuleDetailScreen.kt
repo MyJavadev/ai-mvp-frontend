@@ -49,13 +49,11 @@ fun ModuleDetailScreen(
             )
         },
         floatingActionButton = {
-            if (!module.isCompleted) {
-                ExtendedFloatingActionButton(
-                    onClick = { showCompleteDialog = true },
-                    icon = { Icon(Icons.Default.CheckCircle, contentDescription = null) },
-                    text = { Text("Completar") }
-                )
-            }
+            ExtendedFloatingActionButton(
+                onClick = { showCompleteDialog = true },
+                icon = { Icon(Icons.Default.CheckCircle, contentDescription = null) },
+                text = { Text("Completar") }
+            )
         }
     ) { paddingValues ->
         Column(
@@ -90,18 +88,16 @@ fun ModuleDetailScreen(
                 )
 
                 // Description
-                module.description?.let { desc ->
-                    Text(
-                        text = desc,
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
+                Text(
+                    text = module.description,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
 
                 HorizontalDivider()
 
                 // Subtopics
-                module.subtopics?.let { subtopics ->
+                if (module.subtopics.isNotEmpty()) {
                     Column {
                         Text(
                             text = "Temas cubiertos",
@@ -109,10 +105,21 @@ fun ModuleDetailScreen(
                             fontWeight = FontWeight.SemiBold
                         )
                         Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = subtopics,
-                            style = MaterialTheme.typography.bodyMedium
-                        )
+                        module.subtopics.forEachIndexed { index, subtopic ->
+                            Row(
+                                modifier = Modifier.padding(vertical = 4.dp)
+                            ) {
+                                Text(
+                                    text = "${index + 1}. ",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                Text(
+                                    text = subtopic,
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+                            }
+                        }
                     }
                 }
 
@@ -123,9 +130,11 @@ fun ModuleDetailScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    // Audio button
+                    // Audio button - usa description como texto para TTS
                     OutlinedButton(
-                        onClick = { onGenerateTTS(module.id, module.content) },
+                        onClick = {
+                            onGenerateTTS(module.id, module.description)
+                        },
                         modifier = Modifier.weight(1f)
                     ) {
                         Icon(Icons.AutoMirrored.Filled.VolumeUp, contentDescription = null)
@@ -144,19 +153,6 @@ fun ModuleDetailScreen(
                     }
                 }
 
-                HorizontalDivider()
-
-                // Content
-                Text(
-                    text = "Contenido Detallado",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold
-                )
-
-                Text(
-                    text = module.content,
-                    style = MaterialTheme.typography.bodyMedium
-                )
 
                 Spacer(modifier = Modifier.height(80.dp)) // Space for FAB
             }

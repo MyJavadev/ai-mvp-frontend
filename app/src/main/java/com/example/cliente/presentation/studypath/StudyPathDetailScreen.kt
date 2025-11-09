@@ -5,7 +5,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.outlined.Circle
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -71,24 +70,15 @@ fun StudyPathDetailScreen(
                                 .padding(16.dp)
                         ) {
                             Text(
-                                text = "Progreso",
+                                text = "Módulos Disponibles",
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.SemiBold
                             )
                             Spacer(modifier = Modifier.height(8.dp))
-                            val completedModules = modules.count { it.isCompleted }
-                            val progress = if (modules.isNotEmpty()) {
-                                (completedModules.toFloat() / modules.size.toFloat() * 100).toInt()
-                            } else 0
-
-                            LinearProgressIndicator(
-                                progress = { progress / 100f },
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                            Spacer(modifier = Modifier.height(4.dp))
                             Text(
-                                text = "$progress% Completado ($completedModules/${modules.size} módulos)",
-                                style = MaterialTheme.typography.bodySmall
+                                text = "${modules.size} módulos en esta ruta",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     }
@@ -142,17 +132,9 @@ fun ModuleCard(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
-                imageVector = if (module.isCompleted) {
-                    Icons.Default.CheckCircle
-                } else {
-                    Icons.Outlined.Circle
-                },
+                imageVector = Icons.Outlined.Circle,
                 contentDescription = null,
-                tint = if (module.isCompleted) {
-                    MaterialTheme.colorScheme.primary
-                } else {
-                    MaterialTheme.colorScheme.onSurfaceVariant
-                },
+                tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(32.dp)
             )
             Spacer(modifier = Modifier.width(12.dp))
@@ -166,16 +148,18 @@ fun ModuleCard(
                 )
                 Spacer(modifier = Modifier.height(4.dp))
 
-                val description: String = module.description ?: "Sin descripción"
                 Text(
-                    text = description,
+                    text = module.description,
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 2
                 )
-                module.estimatedMinutes?.let { minutes ->
+
+                // Mostrar cantidad de subtemas
+                if (module.subtopics.isNotEmpty()) {
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "$minutes min",
+                        text = "${module.subtopics.size} temas",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.primary
                     )

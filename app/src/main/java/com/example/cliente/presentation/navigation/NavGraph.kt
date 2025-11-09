@@ -166,15 +166,13 @@ fun ModuleDetailScreenWrapper(
             id = moduleId.toIntOrNull() ?: 0,
             study_path_id = 1,
             title = "Módulo de Ejemplo",
-            description = "Este es un módulo de ejemplo. Implementa el ViewModel para cargar datos reales.",
-            content = "Contenido detallado del módulo. Aquí iría el contenido real cargado desde el backend.",
-            subtopics = "• Tema 1\n• Tema 2\n• Tema 3",
-            order_index = 1,
-            image_url = null,
-            audio_url = null,
-            created_at = "2025-01-09T00:00:00Z",
-            isCompleted = false,
-            estimatedMinutes = 30
+            description = "Este es un módulo de ejemplo. Implementa el ViewModel para cargar datos reales desde GET /study-path-modules/:id",
+            subtopics = listOf(
+                "Tema 1: Introducción",
+                "Tema 2: Conceptos básicos",
+                "Tema 3: Práctica"
+            ),
+            image_url = null
         )
     }
 
