@@ -25,7 +25,8 @@ fun StudyPathDetailScreen(
     onNavigateBack: () -> Unit,
     viewModel: StudyPathViewModel = hiltViewModel()
 ) {
-    val studyPath by viewModel.selectedStudyPath.collectAsState()
+    val modules by viewModel.studyPathModules.collectAsState()
+    val isLoading by viewModel.studyPathModulesLoading.collectAsState()
 
     LaunchedEffect(pathId) {
         viewModel.getStudyPath(pathId)
@@ -34,7 +35,7 @@ fun StudyPathDetailScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(studyPath?.topic ?: "Study Path") },
+                title = { Text("Ruta de Estudio") },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = Strings.BACK)
@@ -43,7 +44,16 @@ fun StudyPathDetailScreen(
             )
         }
     ) { paddingValues ->
-        studyPath?.let { path ->
+        if (isLoading) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
+        } else if (modules.isNotEmpty()) {
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
@@ -61,18 +71,23 @@ fun StudyPathDetailScreen(
                                 .padding(16.dp)
                         ) {
                             Text(
-                                text = "Progress",
+                                text = "Progreso",
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.SemiBold
                             )
                             Spacer(modifier = Modifier.height(8.dp))
+                            val completedModules = modules.count { it.isCompleted }
+                            val progress = if (modules.isNotEmpty()) {
+                                (completedModules.toFloat() / modules.size.toFloat() * 100).toInt()
+                            } else 0
+
                             LinearProgressIndicator(
-                                progress = { path.progress / 100f },
+                                progress = { progress / 100f },
                                 modifier = Modifier.fillMaxWidth()
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
-                                text = "${path.progress}% Complete",
+                                text = "$progress% Completado ($completedModules/${modules.size} módulos)",
                                 style = MaterialTheme.typography.bodySmall
                             )
                         }
@@ -81,26 +96,32 @@ fun StudyPathDetailScreen(
 
                 item {
                     Text(
-                        text = "Modules",
+                        text = "Módulos",
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold
                     )
                 }
 
-                items(path.modules) { module ->
+                items(modules) { module ->
                     ModuleCard(
                         module = module,
-                        onClick = { onNavigateToModule(module.id) }
+                        onClick = { onNavigateToModule(module.id.toString()) }
                     )
                 }
             }
-        } ?: Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues),
-            contentAlignment = Alignment.Center
-        ) {
-            CircularProgressIndicator()
+        } else {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "No hay módulos disponibles",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
         }
     }
 }
@@ -144,8 +165,10 @@ fun ModuleCard(
                     fontWeight = FontWeight.SemiBold
                 )
                 Spacer(modifier = Modifier.height(4.dp))
+
+                val description: String = module.description ?: "Sin descripción"
                 Text(
-                    text = module.description,
+                    text = description,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

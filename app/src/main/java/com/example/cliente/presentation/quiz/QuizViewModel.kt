@@ -3,8 +3,9 @@ package com.example.cliente.presentation.quiz
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.cliente.data.model.QuizAnswerDto
-import com.example.cliente.data.model.QuizDto
 import com.example.cliente.data.model.QuizResultDto
+import com.example.cliente.data.model.SubmitQuizRequest
+import com.example.cliente.data.remote.QuizWithQuestionsResponse
 import com.example.cliente.data.repository.QuizRepository
 import com.example.cliente.util.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -17,8 +18,9 @@ import javax.inject.Inject
 
 data class QuizState(
     val isLoading: Boolean = false,
-    val quiz: QuizDto? = null,
-    val error: String? = null
+    val quiz: QuizWithQuestionsResponse? = null,
+    val error: String? = null,
+    val generateMessage: String? = null
 )
 
 data class QuizResultState(
@@ -38,19 +40,24 @@ class QuizViewModel @Inject constructor(
     private val _quizResultState = MutableStateFlow(QuizResultState())
     val quizResultState: StateFlow<QuizResultState> = _quizResultState.asStateFlow()
 
-    private val _userAnswers = MutableStateFlow<Map<String, Int>>(emptyMap())
-    val userAnswers: StateFlow<Map<String, Int>> = _userAnswers.asStateFlow()
+    private val _userAnswers = MutableStateFlow<Map<Int, Int>>(emptyMap())
+    val userAnswers: StateFlow<Map<Int, Int>> = _userAnswers.asStateFlow()
 
-    fun generateQuiz(moduleId: String, numberOfQuestions: Int = 5) {
-        repository.generateQuiz(moduleId, numberOfQuestions).onEach { result ->
+    /**
+     * Encola la generación de un quiz para el módulo.
+     * POST /modules/:moduleId/quiz
+     */
+    fun generateQuiz(moduleId: Int) {
+        repository.generateQuiz(moduleId).onEach { result ->
             when (result) {
                 is Resource.Success -> {
-                    _quizState.value = QuizState(quiz = result.data)
-                    _userAnswers.value = emptyMap()
+                    _quizState.value = QuizState(
+                        generateMessage = result.data
+                    )
                 }
                 is Resource.Error -> {
                     _quizState.value = QuizState(
-                        error = result.message ?: "Error generating quiz"
+                        error = result.message ?: "Error al generar quiz"
                     )
                 }
                 is Resource.Loading -> {
@@ -60,25 +67,54 @@ class QuizViewModel @Inject constructor(
         }.launchIn(viewModelScope)
     }
 
-    fun setAnswer(questionId: String, answer: Int) {
+    /**
+     * Obtiene el quiz generado con sus preguntas.
+     * GET /modules/:moduleId/quiz
+     */
+    fun getModuleQuiz(moduleId: Int) {
+        repository.getModuleQuiz(moduleId).onEach { result ->
+            when (result) {
+                is Resource.Success -> {
+                    _quizState.value = QuizState(quiz = result.data)
+                    _userAnswers.value = emptyMap()
+                }
+                is Resource.Error -> {
+                    _quizState.value = QuizState(
+                        error = result.message ?: "Error al obtener quiz"
+                    )
+                }
+                is Resource.Loading -> {
+                    _quizState.value = QuizState(isLoading = true)
+                }
+            }
+        }.launchIn(viewModelScope)
+    }
+
+    fun setAnswer(questionId: Int, answerIndex: Int) {
         _userAnswers.value = _userAnswers.value.toMutableMap().apply {
-            put(questionId, answer)
+            put(questionId, answerIndex)
         }
     }
 
-    fun submitQuiz(quizId: String) {
-        val answers = _userAnswers.value.map { (questionId, answer) ->
-            QuizAnswerDto(questionId, answer)
+    /**
+     * Envía las respuestas del usuario.
+     * POST /quizzes/:quizId/submit
+     */
+    fun submitQuiz(quizId: Int, userId: Int) {
+        val answers = _userAnswers.value.map { (questionId, answerIndex) ->
+            QuizAnswerDto(questionId, answerIndex)
         }
 
-        repository.submitQuiz(quizId, answers).onEach { result ->
+        val request = SubmitQuizRequest(userId, answers)
+
+        repository.submitQuiz(quizId, request).onEach { result ->
             when (result) {
                 is Resource.Success -> {
                     _quizResultState.value = QuizResultState(result = result.data)
                 }
                 is Resource.Error -> {
                     _quizResultState.value = QuizResultState(
-                        error = result.message ?: "Error submitting quiz"
+                        error = result.message ?: "Error al enviar quiz"
                     )
                 }
                 is Resource.Loading -> {

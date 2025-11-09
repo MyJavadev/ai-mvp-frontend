@@ -19,7 +19,6 @@ fun CreateStudyPathScreen(
     viewModel: StudyPathViewModel = hiltViewModel()
 ) {
     var topic by remember { mutableStateOf("") }
-    var selectedLevel by remember { mutableStateOf("beginner") }
     val state by viewModel.createStudyPathState.collectAsState()
 
     LaunchedEffect(state.studyPath) {
@@ -48,68 +47,64 @@ fun CreateStudyPathScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+            // Descripción de la funcionalidad
+            Text(
+                text = "Crea una ruta de estudio personalizada con IA",
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+
             OutlinedTextField(
                 value = topic,
                 onValueChange = { topic = it },
-                label = { Text("Topic") },
-                placeholder = { Text("e.g., Machine Learning Basics") },
+                label = { Text("Tema de estudio") },
+                placeholder = { Text("Ej: Aprender Kafka desde cero") },
                 modifier = Modifier.fillMaxWidth(),
-                enabled = !state.isLoading
+                enabled = !state.isLoading,
+                supportingText = {
+                    Text("Describe el tema que quieres aprender")
+                }
             )
-
-            Text(
-                text = "Select Level",
-                style = MaterialTheme.typography.titleMedium
-            )
-
-            Column(
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                LevelOption(
-                    title = "Beginner",
-                    description = "New to the topic",
-                    selected = selectedLevel == "beginner",
-                    onClick = { selectedLevel = "beginner" },
-                    enabled = !state.isLoading
-                )
-                LevelOption(
-                    title = "Intermediate",
-                    description = "Some experience",
-                    selected = selectedLevel == "intermediate",
-                    onClick = { selectedLevel = "intermediate" },
-                    enabled = !state.isLoading
-                )
-                LevelOption(
-                    title = "Advanced",
-                    description = "Expert level",
-                    selected = selectedLevel == "advanced",
-                    onClick = { selectedLevel = "advanced" },
-                    enabled = !state.isLoading
-                )
-            }
 
             if (state.error != null) {
-                Text(
-                    text = state.error ?: "",
-                    color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodySmall
-                )
+                Card(
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.errorContainer
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = state.error ?: "",
+                        color = MaterialTheme.colorScheme.onErrorContainer,
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(16.dp)
+                    )
+                }
             }
 
             if (state.message != null) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
+                Card(
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer
+                    ),
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(16.dp),
-                        strokeWidth = 2.dp
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = state.message ?: "",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.primary
-                    )
+                    Row(
+                        modifier = Modifier.padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(20.dp),
+                            strokeWidth = 2.dp,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Text(
+                            text = state.message ?: "",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                    }
                 }
             }
 
@@ -118,7 +113,7 @@ fun CreateStudyPathScreen(
             Button(
                 onClick = {
                     if (topic.isNotBlank()) {
-                        viewModel.createStudyPath(topic, selectedLevel)
+                        viewModel.createStudyPath(topic)
                     }
                 },
                 modifier = Modifier.fillMaxWidth(),
@@ -127,60 +122,17 @@ fun CreateStudyPathScreen(
                 if (state.isLoading) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(24.dp),
-                        color = MaterialTheme.colorScheme.onPrimary
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        strokeWidth = 2.dp
                     )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Generando...")
                 } else {
-                    Text("Create Study Path")
+                    Text("Crear Ruta de Estudio")
                 }
             }
         }
     }
 }
 
-@Composable
-fun LevelOption(
-    title: String,
-    description: String,
-    selected: Boolean,
-    onClick: () -> Unit,
-    enabled: Boolean = true
-) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        onClick = onClick,
-        colors = CardDefaults.cardColors(
-            containerColor = if (selected) {
-                MaterialTheme.colorScheme.primaryContainer
-            } else {
-                MaterialTheme.colorScheme.surface
-            }
-        ),
-        enabled = enabled
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            RadioButton(
-                selected = selected,
-                onClick = onClick,
-                enabled = enabled
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Column {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.titleMedium
-                )
-                Text(
-                    text = description,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
-    }
-}
 

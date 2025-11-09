@@ -97,7 +97,7 @@ fun StudyPathListScreen(
                         items(state.studyPaths) { studyPath ->
                             StudyPathCard(
                                 studyPath = studyPath,
-                                onClick = { onNavigateToDetail(studyPath.id) }
+                                onClick = { onNavigateToDetail(studyPath.id.toString()) }
                             )
                         }
                     }
@@ -128,7 +128,7 @@ fun StudyPathCard(
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = "Level: ${studyPath.level}",
+                text = "Creado: ${studyPath.created_at}",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )

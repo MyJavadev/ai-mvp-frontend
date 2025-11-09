@@ -24,8 +24,15 @@ fun QuizScreen(
     val quizState by viewModel.quizState.collectAsState()
     val userAnswers by viewModel.userAnswers.collectAsState()
 
+    // TODO: Obtener userId real desde UserPreferences
+    val mockUserId = 1
+
     LaunchedEffect(moduleId) {
-        viewModel.generateQuiz(moduleId)
+        // Primero intenta obtener el quiz existente
+        val moduleIdInt = moduleId.toIntOrNull()
+        if (moduleIdInt != null) {
+            viewModel.getModuleQuiz(moduleIdInt)
+        }
     }
 
     LaunchedEffect(viewModel.quizResultState.collectAsState().value.result) {
@@ -40,7 +47,7 @@ fun QuizScreen(
                 title = { Text("Quiz") },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
                     }
                 }
             )
@@ -65,13 +72,53 @@ fun QuizScreen(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
-                            text = quizState.error ?: "Error loading quiz",
-                            color = MaterialTheme.colorScheme.error
+                            text = quizState.error ?: "Error al cargar quiz",
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        // Botón para generar quiz si no existe
+                        if (quizState.error?.contains("404") == true || quizState.error?.contains("no") == true) {
+                            Button(
+                                onClick = {
+                                    val moduleIdInt = moduleId.toIntOrNull()
+                                    if (moduleIdInt != null) {
+                                        viewModel.generateQuiz(moduleIdInt)
+                                    }
+                                }
+                            ) {
+                                Text("Generar Quiz")
+                            }
+                        }
+                    }
+                }
+                quizState.generateMessage != null -> {
+                    Column(
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                            .padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        CircularProgressIndicator()
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = quizState.generateMessage ?: "Generando quiz...",
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "Por favor espera mientras se genera el quiz",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
                 quizState.quiz != null -> {
-                    val quiz = quizState.quiz!!
+                    val quizData = quizState.quiz!!
+                    val questions = quizData.questions
+                    val quiz = quizData.quiz
+
                     Column(
                         modifier = Modifier.fillMaxSize()
                     ) {
@@ -82,11 +129,19 @@ fun QuizScreen(
                             contentPadding = PaddingValues(16.dp),
                             verticalArrangement = Arrangement.spacedBy(16.dp)
                         ) {
-                            itemsIndexed(quiz.questions) { index, question ->
+                            itemsIndexed(questions) { index, question ->
+                                // Convertir las opciones del backend (option_a, b, c, d) a lista
+                                val options = listOf(
+                                    question.option_a,
+                                    question.option_b,
+                                    question.option_c,
+                                    question.option_d
+                                )
+
                                 QuestionCard(
                                     questionNumber = index + 1,
-                                    question = question.question,
-                                    options = question.options,
+                                    question = question.question_text,
+                                    options = options,
                                     selectedAnswer = userAnswers[question.id],
                                     onAnswerSelected = { answer ->
                                         viewModel.setAnswer(question.id, answer)
@@ -97,14 +152,14 @@ fun QuizScreen(
 
                         Button(
                             onClick = {
-                                viewModel.submitQuiz(quiz.id)
+                                viewModel.submitQuiz(quiz.id, mockUserId)
                             },
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(16.dp),
-                            enabled = userAnswers.size == quiz.questions.size
+                            enabled = userAnswers.size == questions.size
                         ) {
-                            Text("Submit Quiz")
+                            Text("Enviar Respuestas")
                         }
                     }
                 }

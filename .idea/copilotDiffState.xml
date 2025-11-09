@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CopilotDiffPersistence">
+    <option name="pendingDiffs">
+      <map>
+        <entry key="$PROJECT_DIR$/app/src/main/java/com/example/cliente/data/model/QuizDto.kt">
+          <value>
+            <PendingDiffInfo>
+              <option name="filePath" value="$PROJECT_DIR$/app/src/main/java/com/example/cliente/data/model/QuizDto.kt" />
+              <option name="originalContent" value="package com.example.cliente.data.model&#10;&#10;import kotlinx.serialization.Serializable&#10;&#10;@Serializable&#10;data class QuizDto(&#10;    val id: String,&#10;    val userId: String,&#10;    val moduleId: String,&#10;    val questions: List&lt;QuestionDto&gt;,&#10;    val score: Int? = null,&#10;    val totalQuestions: Int,&#10;    val status: String, // &quot;pending&quot;, &quot;in_progress&quot;, &quot;completed&quot;&#10;    val createdAt: String? = null,&#10;    val completedAt: String? = null&#10;)&#10;&#10;@Serializable&#10;data class QuestionDto(&#10;    val id: String,&#10;    val question: String,&#10;    val options: List&lt;String&gt;,&#10;    val correctAnswer: Int,&#10;    val explanation: String? = null,&#10;    val userAnswer: Int? = null,&#10;    val isCorrect: Boolean? = null&#10;)&#10;&#10;@Serializable&#10;data class GenerateQuizRequest(&#10;    val moduleId: String,&#10;    val numberOfQuestions: Int = 5&#10;)&#10;&#10;@Serializable&#10;data class SubmitQuizRequest(&#10;    val userId: Int,&#10;    val answers: List&lt;QuizAnswerDto&gt;&#10;)&#10;&#10;@Serializable&#10;data class QuizAnswerDto(&#10;    val questionId: Int,&#10;    val selectedOptionIndex: Int&#10;)&#10;&#10;@Serializable&#10;data class QuizResultDto(&#10;    val quizId: String,&#10;    val score: Int,&#10;    val totalQuestions: Int,&#10;    val percentage: Float,&#10;    val passed: Boolean,&#10;    val answers: List&lt;QuestionDto&gt;&#10;)&#10;&#10;" />
+              <option name="updatedContent" value="package com.example.cliente.data.model&#10;&#10;import kotlinx.serialization.Serializable&#10;&#10;@Serializable&#10;data class QuizDto(&#10;    val id: Int,&#10;    val userId: Int,&#10;    val moduleId: Int,&#10;    val questions: List&lt;QuestionDto&gt;,&#10;    val score: Int? = null,&#10;    val totalQuestions: Int,&#10;    val status: String, // &quot;pending&quot;, &quot;in_progress&quot;, &quot;completed&quot;&#10;    val createdAt: String? = null,&#10;    val completedAt: String? = null&#10;)&#10;&#10;@Serializable&#10;data class QuestionDto(&#10;    val id: Int,&#10;    val question: String,&#10;    val options: List&lt;String&gt;,&#10;    val correctAnswer: Int,&#10;    val explanation: String? = null,&#10;    val userAnswer: Int? = null,&#10;    val isCorrect: Boolean? = null&#10;)&#10;&#10;@Serializable&#10;data class GenerateQuizRequest(&#10;    val moduleId: String,&#10;    val numberOfQuestions: Int = 5&#10;)&#10;&#10;@Serializable&#10;data class SubmitQuizRequest(&#10;    val userId: Int,&#10;    val answers: List&lt;QuizAnswerDto&gt;&#10;)&#10;&#10;@Serializable&#10;data class QuizAnswerDto(&#10;    val questionId: Int,&#10;    val selectedOptionIndex: Int&#10;)&#10;&#10;@Serializable&#10;data class QuizResultDto(&#10;    val quizId: Int,&#10;    val score: Int,&#10;    val totalQuestions: Int,&#10;    val percentage: Float,&#10;    val passed: Boolean,&#10;    val answers: List&lt;QuestionDto&gt;&#10;)&#10;&#10;" />
+            </PendingDiffInfo>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+</project>

@@ -43,6 +43,12 @@ class StudyPathViewModel @Inject constructor(
     private val _selectedStudyPath = MutableStateFlow<StudyPathDto?>(null)
     val selectedStudyPath: StateFlow<StudyPathDto?> = _selectedStudyPath.asStateFlow()
 
+    private val _studyPathModules = MutableStateFlow<List<com.example.cliente.data.model.ModuleDto>>(emptyList())
+    val studyPathModules: StateFlow<List<com.example.cliente.data.model.ModuleDto>> = _studyPathModules.asStateFlow()
+
+    private val _studyPathModulesLoading = MutableStateFlow(false)
+    val studyPathModulesLoading: StateFlow<Boolean> = _studyPathModulesLoading.asStateFlow()
+
     private var currentUserId: String? = null
 
     init {
@@ -79,7 +85,7 @@ class StudyPathViewModel @Inject constructor(
         }.launchIn(viewModelScope)
     }
 
-    fun createStudyPath(topic: String, level: String) {
+    fun createStudyPath(topic: String) {
         val userId = currentUserId?.toIntOrNull() ?: return
 
         // Primera fase: encolar la generación
@@ -132,33 +138,20 @@ class StudyPathViewModel @Inject constructor(
         repository.getStudyPath(pathId).onEach { result ->
             when (result) {
                 is Resource.Success -> {
-                    _selectedStudyPath.value = result.data
+                    _studyPathModules.value = result.data ?: emptyList()
+                    _studyPathModulesLoading.value = false
                 }
                 is Resource.Error -> {
-                    // Handle error
+                    _studyPathModulesLoading.value = false
+                    // Handle error - podría agregar un estado de error si es necesario
                 }
                 is Resource.Loading -> {
-                    // Handle loading
+                    _studyPathModulesLoading.value = true
                 }
             }
         }.launchIn(viewModelScope)
     }
 
-    fun updateModuleProgress(pathId: String, moduleId: String, isCompleted: Boolean) {
-        repository.updateModuleProgress(pathId, moduleId, isCompleted).onEach { result ->
-            when (result) {
-                is Resource.Success -> {
-                    _selectedStudyPath.value = result.data
-                }
-                is Resource.Error -> {
-                    // Handle error
-                }
-                is Resource.Loading -> {
-                    // Handle loading
-                }
-            }
-        }.launchIn(viewModelScope)
-    }
 
     fun clearCreateState() {
         _createStudyPathState.value = CreateStudyPathState()

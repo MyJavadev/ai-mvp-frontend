@@ -4,9 +4,9 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class QuizDto(
-    val id: String,
-    val userId: String,
-    val moduleId: String,
+    val id: Int,
+    val userId: Int,
+    val moduleId: Int,
     val questions: List<QuestionDto>,
     val score: Int? = null,
     val totalQuestions: Int,
@@ -17,7 +17,7 @@ data class QuizDto(
 
 @Serializable
 data class QuestionDto(
-    val id: String,
+    val id: Int,
     val question: String,
     val options: List<String>,
     val correctAnswer: Int,
@@ -34,19 +34,19 @@ data class GenerateQuizRequest(
 
 @Serializable
 data class SubmitQuizRequest(
-    val quizId: String,
+    val userId: Int,
     val answers: List<QuizAnswerDto>
 )
 
 @Serializable
 data class QuizAnswerDto(
-    val questionId: String,
-    val answer: Int
+    val questionId: Int,
+    val selectedOptionIndex: Int
 )
 
 @Serializable
 data class QuizResultDto(
-    val quizId: String,
+    val quizId: Int,
     val score: Int,
     val totalQuestions: Int,
     val percentage: Float,
