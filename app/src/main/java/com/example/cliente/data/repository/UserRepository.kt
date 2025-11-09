@@ -12,45 +12,48 @@ class UserRepository @Inject constructor(
     private val apiService: UserApiService
 ) {
 
+    /**
+     * Crea o reutiliza un usuario.
+     * POST /users
+     * Response: 201 Created o 200 OK con UserDto directo
+     */
     fun createUser(username: String): Flow<Resource<UserDto>> = flow {
         try {
             emit(Resource.Loading())
-            val response = apiService.createUser(CreateUserRequest(username))
-            if (response.success && response.data != null) {
-                emit(Resource.Success(response.data))
-            } else {
-                emit(Resource.Error(response.error ?: "Error creating user"))
-            }
+            val user = apiService.createUser(CreateUserRequest(username))
+            emit(Resource.Success(user))
         } catch (e: Exception) {
-            emit(Resource.Error(e.localizedMessage ?: "An unexpected error occurred"))
+            emit(Resource.Error(e.localizedMessage ?: "Error al crear usuario"))
         }
     }
 
+    /**
+     * Obtiene información de un usuario.
+     * GET /users/:userId
+     * Response: 200 OK con UserDto directo
+     */
     fun getUser(userId: String): Flow<Resource<UserDto>> = flow {
         try {
             emit(Resource.Loading())
-            val response = apiService.getUser(userId)
-            if (response.success && response.data != null) {
-                emit(Resource.Success(response.data))
-            } else {
-                emit(Resource.Error(response.error ?: "Error fetching user"))
-            }
+            val user = apiService.getUser(userId)
+            emit(Resource.Success(user))
         } catch (e: Exception) {
-            emit(Resource.Error(e.localizedMessage ?: "An unexpected error occurred"))
+            emit(Resource.Error(e.localizedMessage ?: "Error al obtener usuario"))
         }
     }
 
+    /**
+     * Actualiza un usuario.
+     * PUT /users/:userId
+     * Response: 200 OK con UserDto directo
+     */
     fun updateUser(userId: String, user: UserDto): Flow<Resource<UserDto>> = flow {
         try {
             emit(Resource.Loading())
-            val response = apiService.updateUser(userId, user)
-            if (response.success && response.data != null) {
-                emit(Resource.Success(response.data))
-            } else {
-                emit(Resource.Error(response.error ?: "Error updating user"))
-            }
+            val updatedUser = apiService.updateUser(userId, user)
+            emit(Resource.Success(updatedUser))
         } catch (e: Exception) {
-            emit(Resource.Error(e.localizedMessage ?: "An unexpected error occurred"))
+            emit(Resource.Error(e.localizedMessage ?: "Error al actualizar usuario"))
         }
     }
 }

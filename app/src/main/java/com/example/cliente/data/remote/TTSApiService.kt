@@ -1,6 +1,5 @@
 package com.example.cliente.data.remote
 
-import com.example.cliente.data.model.ApiResponse
 import kotlinx.serialization.Serializable
 import retrofit2.http.*
 
@@ -76,11 +75,11 @@ data class TTSJobResponse(
 data class TTSJobStatusResponse(
     val id: String,
     val user_id: Int,
-    val module_id: Int?,
+    val module_id: Int? = null,
     val status: String, // "pending", "processing", "completed", "failed"
     val audioUrl: String? = null,
     val error: String? = null,
-    val created_at: String,
-    val updated_at: String?
+    val created_at: String = "",
+    val updated_at: String? = null
 )
 

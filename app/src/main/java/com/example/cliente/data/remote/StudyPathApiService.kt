@@ -111,8 +111,8 @@ data class StudyPathRequest(
     val user_id: Int,
     val topic: String,
     val status: String, // "pending", "processing", "completed", "failed"
-    val study_path_id: Int?,
-    val created_at: String,
-    val updated_at: String?
+    val study_path_id: Int? = null,
+    val created_at: String = "",
+    val updated_at: String? = null
 )
 

@@ -1,6 +1,5 @@
 package com.example.cliente.data.remote
 
-import com.example.cliente.data.model.ApiResponse
 import kotlinx.serialization.Serializable
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -80,7 +79,7 @@ data class ModuleProgressDto(
     val user_id: Int,
     val module_id: Int,
     val completed: Boolean,
-    val completed_at: String?
+    val completed_at: String? = null
 )
 
 @Serializable
@@ -89,8 +88,8 @@ data class AchievementDto(
     val user_id: Int,
     val achievement_type: String,
     val description: String,
-    val generated_image_url: String?,
-    val unlocked_at: String
+    val generated_image_url: String? = null,
+    val unlocked_at: String = ""
 )
 
 @Serializable
@@ -124,14 +123,14 @@ data class TimelineRequest(
     val id: String,
     val topic: String,
     val status: String,
-    val created_at: String
+    val created_at: String = ""
 )
 
 @Serializable
 data class TimelineStudyPath(
     val id: Int,
     val topic: String,
-    val created_at: String
+    val created_at: String = ""
 )
 
 @Serializable
@@ -145,13 +144,13 @@ data class TimelineModule(
 data class TimelineQuiz(
     val id: Int,
     val module_id: Int,
-    val created_at: String
+    val created_at: String = ""
 )
 
 @Serializable
 data class TimelineTTS(
     val id: String,
     val status: String,
-    val created_at: String
+    val created_at: String = ""
 )
 
