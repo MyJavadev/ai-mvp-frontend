@@ -1,6 +1,5 @@
 package com.example.cliente.data.remote
 
-import com.example.cliente.data.model.ApiResponse
 import com.example.cliente.data.model.StudyPathDto
 import com.example.cliente.data.model.ModuleDto
 import kotlinx.serialization.Serializable
@@ -67,11 +66,12 @@ interface StudyPathApiService {
      * Obtiene un módulo específico.
      *
      * GET /study-path-modules/:id
+     * Response: 200 OK con el módulo directo (sin wrapper)
      */
     @GET("study-path-modules/{id}")
     suspend fun getModule(
         @Path("id") moduleId: String
-    ): ApiResponse<ModuleDto>
+    ): ModuleDto
 }
 
 /**

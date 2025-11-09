@@ -102,18 +102,16 @@ class StudyPathRepository @Inject constructor(
 
     /**
      * Obtiene un módulo específico.
+     * GET /study-path-modules/:id
+     * Response: ModuleDto directo
      */
     fun getModule(moduleId: String): Flow<Resource<ModuleDto>> = flow {
         try {
             emit(Resource.Loading())
-            val response = apiService.getModule(moduleId)
-            if (response.success && response.data != null) {
-                emit(Resource.Success(response.data))
-            } else {
-                emit(Resource.Error(response.error ?: "Error fetching module"))
-            }
+            val module = apiService.getModule(moduleId)
+            emit(Resource.Success(module))
         } catch (e: Exception) {
-            emit(Resource.Error(e.localizedMessage ?: "Error fetching module"))
+            emit(Resource.Error(e.localizedMessage ?: "Error al obtener módulo"))
         }
     }
 }

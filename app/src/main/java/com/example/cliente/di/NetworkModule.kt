@@ -89,6 +89,12 @@ object NetworkModule {
 
     @Provides
     @Singleton
+    fun provideTTSApiService(retrofit: Retrofit): TTSApiService {
+        return retrofit.create(TTSApiService::class.java)
+    }
+
+    @Provides
+    @Singleton
     fun provideAgentApiService(retrofit: Retrofit): AgentApiService {
         return retrofit.create(AgentApiService::class.java)
     }
