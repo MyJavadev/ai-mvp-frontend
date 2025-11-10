@@ -94,6 +94,9 @@ dependencies {
     // Coil
     implementation(libs.coil.compose)
 
+    // Markdown para Compose
+    implementation("com.github.jeziellago:compose-markdown:0.3.5")
+
     // DataStore
     implementation(libs.androidx.datastore.preferences)
 
