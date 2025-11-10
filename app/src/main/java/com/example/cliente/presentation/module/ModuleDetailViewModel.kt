@@ -31,6 +31,13 @@ data class TTSState(
     val status: String? = null
 )
 
+data class ModuleCompletionState(
+    val isLoading: Boolean = false,
+    val isCompleted: Boolean = false,
+    val error: String? = null,
+    val message: String? = null
+)
+
 @HiltViewModel
 class ModuleDetailViewModel @Inject constructor(
     private val studyPathRepository: StudyPathRepository,
@@ -44,6 +51,12 @@ class ModuleDetailViewModel @Inject constructor(
 
     private val _ttsState = MutableStateFlow(TTSState())
     val ttsState: StateFlow<TTSState> = _ttsState.asStateFlow()
+
+    private val _completionState = MutableStateFlow(ModuleCompletionState())
+    val completionState: StateFlow<ModuleCompletionState> = _completionState.asStateFlow()
+
+    // Cache de audios generados por texto (texto -> audioUrl)
+    private val audioCache = mutableMapOf<String, String>()
 
     private var currentUserId: Int? = null
 
@@ -80,10 +93,25 @@ class ModuleDetailViewModel @Inject constructor(
     /**
      * Genera audio TTS para un texto específico.
      * POST /text-to-speech
+     *
+     * Implementa caché: si el audio ya fue generado para este texto, lo reutiliza.
      */
     fun generateTTS(moduleId: Int, text: String) {
         val userId = currentUserId ?: return
 
+        // Verificar si ya existe en caché
+        val cachedAudioUrl = audioCache[text]
+        if (cachedAudioUrl != null) {
+            // Reutilizar audio existente
+            _ttsState.value = TTSState(
+                audioUrl = cachedAudioUrl,
+                status = "completed",
+                currentJobId = null
+            )
+            return
+        }
+
+        // Si no está en caché, generar nuevo audio
         ttsRepository.createTTSJob(text, userId, moduleId).onEach { result ->
             when (result) {
                 is Resource.Success -> {
@@ -95,7 +123,7 @@ class ModuleDetailViewModel @Inject constructor(
                             status = "pending"
                         )
                         // Iniciar polling del trabajo TTS
-                        pollTTSJob(jobId)
+                        pollTTSJob(jobId, text)
                     }
                 }
                 is Resource.Error -> {
@@ -112,13 +140,19 @@ class ModuleDetailViewModel @Inject constructor(
 
     /**
      * Hace polling del trabajo TTS hasta que se complete.
+     * Guarda el audio en caché para reutilización.
      */
-    private fun pollTTSJob(jobId: String) {
+    private fun pollTTSJob(jobId: String, text: String) {
         ttsRepository.pollTTSJob(jobId, maxAttempts = 20).onEach { result ->
             when (result) {
                 is Resource.Success -> {
+                    val audioUrl = result.data?.audioUrl
+                    if (audioUrl != null) {
+                        // Guardar en caché
+                        audioCache[text] = audioUrl
+                    }
                     _ttsState.value = TTSState(
-                        audioUrl = result.data?.audioUrl,
+                        audioUrl = audioUrl,
                         currentJobId = jobId,
                         status = "completed"
                     )
@@ -142,24 +176,41 @@ class ModuleDetailViewModel @Inject constructor(
     /**
      * Marca el módulo como completado.
      * POST /progress/modules/complete
+     * Body: { "userId": 1, "moduleId": 23 }
      */
     fun completeModule(moduleId: Int) {
-        val userId = currentUserId ?: return
+        val userId = currentUserId
+        if (userId == null) {
+            _completionState.value = ModuleCompletionState(
+                error = "Usuario no identificado"
+            )
+            return
+        }
 
         progressRepository.completeModule(userId, moduleId).onEach { result ->
             when (result) {
                 is Resource.Success -> {
-                    // Módulo completado exitosamente
-                    // Podrías actualizar el estado o mostrar un mensaje
+                    _completionState.value = ModuleCompletionState(
+                        isCompleted = true,
+                        message = "¡Módulo completado! Has ganado puntos de progreso."
+                    )
                 }
                 is Resource.Error -> {
-                    // Manejar error
+                    _completionState.value = ModuleCompletionState(
+                        error = result.message ?: "Error al completar módulo"
+                    )
                 }
                 is Resource.Loading -> {
-                    // Mostrar loading si es necesario
+                    _completionState.value = ModuleCompletionState(
+                        isLoading = true
+                    )
                 }
             }
         }.launchIn(viewModelScope)
+    }
+
+    fun clearCompletionState() {
+        _completionState.value = ModuleCompletionState()
     }
 
     fun clearTTSState() {

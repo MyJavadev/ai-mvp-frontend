@@ -29,21 +29,47 @@ interface SearchApiService {
      * Búsqueda por keyword usando Typesense.
      *
      * GET /search/typesense?q=texto
-     * Response: [{ resultados de Typesense }]
+     * Response: { facet_counts: [], found: 6, hits: [...] }
      */
     @GET("search/typesense")
     suspend fun searchTypesense(
         @Query("q") query: String
-    ): List<ModuleDto>
+    ): TypesenseResponse
 }
 
 @Serializable
 data class SearchResultModule(
     val id: Int,
-    val study_path_id: Int,
+    val study_path_id: Int? = null,
     val title: String,
-    val description: String?,
-    val content: String,
-    val distance: Float? = null // Para búsqueda semántica
+    val description: String? = null,
+    val content: String? = null,
+    val distance: Float? = null, // Para búsqueda semántica
+    val subtopics: List<String>? = null
+)
+
+/**
+ * Respuesta completa de Typesense.
+ */
+@Serializable
+data class TypesenseResponse(
+    val facet_counts: List<String> = emptyList(),
+    val found: Int,
+    val hits: List<TypesenseHit>
+)
+
+@Serializable
+data class TypesenseHit(
+    val document: TypesenseDocument
+)
+
+@Serializable
+data class TypesenseDocument(
+    val id: String,
+    val study_path_id: Int? = null,
+    val title: String,
+    val description: String? = null,
+    val subtopics: List<String>? = null,
+    val image_url: String? = null
 )
 

@@ -1,7 +1,7 @@
 package com.example.cliente.data.remote
 
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonElement
 import retrofit2.http.Body
 import retrofit2.http.POST
 
@@ -18,7 +18,7 @@ interface AgentApiService {
      *
      * POST /agent
      * Body: { "prompt": "Que deberia hacer hoy?" }
-     * Response: { "text": "..." } o { "toolResult": {...} }
+     * Response: { "text": "..." } o { "toolResult": {...} } o { "toolResult": "..." }
      */
     @POST("agent")
     suspend fun chat(
@@ -34,6 +34,6 @@ data class AgentRequest(
 @Serializable
 data class AgentResponse(
     val text: String? = null,
-    val toolResult: JsonObject? = null
+    val toolResult: JsonElement? = null // Puede ser string u objeto
 )
 

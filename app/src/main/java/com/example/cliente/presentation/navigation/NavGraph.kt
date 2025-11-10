@@ -44,6 +44,12 @@ fun NavGraph(
                 },
                 onNavigateToCreatePath = {
                     navController.navigate(Screen.CreateStudyPath.route)
+                },
+                onNavigateToSearch = {
+                    navController.navigate(Screen.Search.route)
+                },
+                onNavigateToAgent = {
+                    navController.navigate(Screen.AgentChat.route)
                 }
             )
         }
@@ -137,6 +143,27 @@ fun NavGraph(
         // Quiz Result Screen
         composable(Screen.QuizResult.route) {
             QuizResultScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        // Search Screen
+        composable(Screen.Search.route) {
+            com.example.cliente.presentation.search.SearchScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
+                },
+                onNavigateToModule = { moduleId ->
+                    navController.navigate(Screen.ModuleDetail.createRoute(moduleId.toString()))
+                }
+            )
+        }
+
+        // Agent Chat Screen
+        composable(Screen.AgentChat.route) {
+            com.example.cliente.presentation.agent.AgentChatScreen(
                 onNavigateBack = {
                     navController.popBackStack()
                 }

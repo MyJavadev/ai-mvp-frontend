@@ -1,6 +1,5 @@
 package com.example.cliente.data.remote
 
-import com.example.cliente.data.model.ApiResponse
 import com.example.cliente.data.model.QuizDto
 import com.example.cliente.data.model.QuizResultDto
 import com.example.cliente.data.model.SubmitQuizRequest
@@ -54,6 +53,17 @@ interface QuizApiService {
         @Path("quizId") quizId: Int,
         @Body request: SubmitQuizRequest
     ): QuizResultDto
+
+    /**
+     * Obtiene el rendimiento histórico del usuario en quizzes.
+     *
+     * GET /users/:userId/performance
+     * Response: { "total_quizzes_taken": 5, "average_score": 85.5, "attempts": [...] }
+     */
+    @GET("users/{userId}/performance")
+    suspend fun getUserPerformance(
+        @Path("userId") userId: Int
+    ): UserPerformanceResponse
 }
 
 @Serializable
@@ -67,22 +77,37 @@ data class QuizWithQuestionsResponse(
     val questions: List<QuestionDto>
 )
 
+/**
+ * Pregunta de quiz según backend.
+ * Backend devuelve: { id, question_text, options: ["...", "...", "...", "..."] }
+ */
 @Serializable
 data class QuestionDto(
     val id: Int,
-    val quiz_id: Int,
     val question_text: String,
-    val option_a: String,
-    val option_b: String,
-    val option_c: String,
-    val option_d: String,
-    val correct_option: String, // "A", "B", "C", "D"
-    val explanation: String?
+    val options: List<String> // Array de opciones ["A", "B", "C", "D"]
 )
 
 @Serializable
 data class QuizAnswer(
     val questionId: Int,
     val selectedOptionIndex: Int // 0=A, 1=B, 2=C, 3=D
+)
+
+/**
+ * Respuesta del rendimiento histórico del usuario.
+ */
+@Serializable
+data class UserPerformanceResponse(
+    val total_quizzes_taken: Int,
+    val average_score: Double,
+    val attempts: List<QuizAttemptHistory>
+)
+
+@Serializable
+data class QuizAttemptHistory(
+    val title: String,
+    val score: Int,
+    val completed_at: String
 )
 

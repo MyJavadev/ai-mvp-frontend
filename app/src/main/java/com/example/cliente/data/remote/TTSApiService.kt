@@ -70,17 +70,19 @@ data class TTSJobResponse(
 
 /**
  * Estado de un trabajo TTS según backend.
- * Campos reales del backend: jobId, status, createdAt, completedAt, audioUrl, moduleId, userId
+ *
+ * Cuando NO completado: { jobId, status, createdAt }
+ * Cuando completado: { jobId, status, createdAt, completedAt, audioUrl, moduleId, userId }
  */
 @Serializable
 data class TTSJobStatusResponse(
     val jobId: String,
-    val userId: Int,
-    val moduleId: Int? = null,
     val status: String, // "pending", "processing", "completed", "failed"
+    val createdAt: String,
+    val userId: Int? = null,
+    val moduleId: Int? = null,
     val audioUrl: String? = null,
     val error: String? = null,
-    val createdAt: String = "",
     val completedAt: String? = null
 )
 

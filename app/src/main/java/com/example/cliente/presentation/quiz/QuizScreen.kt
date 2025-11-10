@@ -130,18 +130,10 @@ fun QuizScreen(
                             verticalArrangement = Arrangement.spacedBy(16.dp)
                         ) {
                             itemsIndexed(questions) { index, question ->
-                                // Convertir las opciones del backend (option_a, b, c, d) a lista
-                                val options = listOf(
-                                    question.option_a,
-                                    question.option_b,
-                                    question.option_c,
-                                    question.option_d
-                                )
-
                                 QuestionCard(
                                     questionNumber = index + 1,
                                     question = question.question_text,
-                                    options = options,
+                                    options = question.options, // ← Ya viene como lista
                                     selectedAnswer = userAnswers[question.id],
                                     onAnswerSelected = { answer ->
                                         viewModel.setAnswer(question.id, answer)

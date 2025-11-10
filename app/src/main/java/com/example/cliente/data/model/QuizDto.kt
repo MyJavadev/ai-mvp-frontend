@@ -2,19 +2,22 @@ package com.example.cliente.data.model
 
 import kotlinx.serialization.Serializable
 
+/**
+ * Quiz según backend.
+ * Backend devuelve: { id, module_id, title, created_at }
+ */
 @Serializable
 data class QuizDto(
     val id: Int,
-    val userId: Int,
-    val moduleId: Int,
-    val questions: List<QuestionDto>,
-    val score: Int? = null,
-    val totalQuestions: Int,
-    val status: String, // "pending", "in_progress", "completed"
-    val createdAt: String? = null,
-    val completedAt: String? = null
+    val module_id: Int,
+    val title: String,
+    val created_at: String
 )
 
+/**
+ * Este QuestionDto ya no se usa, se usa el de QuizApiService
+ */
+@Deprecated("Use QuestionDto from QuizApiService")
 @Serializable
 data class QuestionDto(
     val id: Int,
