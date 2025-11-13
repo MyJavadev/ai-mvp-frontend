@@ -99,7 +99,7 @@ data class StudyPathRequestResponse(
 @Serializable
 data class StudyPathRequestStatusResponse(
     val request: StudyPathRequest,
-    val modules: List<ModuleDto>?
+    val modules: List<ModuleDto>? = null
 )
 
 /**

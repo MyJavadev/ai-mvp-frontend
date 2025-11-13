@@ -50,6 +50,9 @@ fun NavGraph(
                 },
                 onNavigateToAgent = {
                     navController.navigate(Screen.AgentChat.route)
+                },
+                onNavigateToProfile = {
+                    navController.navigate(Screen.Profile.route)
                 }
             )
         }
@@ -166,6 +169,21 @@ fun NavGraph(
             com.example.cliente.presentation.agent.AgentChatScreen(
                 onNavigateBack = {
                     navController.popBackStack()
+                }
+            )
+        }
+
+        // Profile Screen
+        composable(Screen.Profile.route) {
+            com.example.cliente.presentation.profile.ProfileScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
+                },
+                onLogoutComplete = {
+                    // Navegar a Setup y limpiar el backstack
+                    navController.navigate(Screen.Setup.route) {
+                        popUpTo(0) { inclusive = true }
+                    }
                 }
             )
         }

@@ -32,6 +32,7 @@ fun HomeScreen(
     onNavigateToCreatePath: () -> Unit,
     onNavigateToSearch: () -> Unit = {},
     onNavigateToAgent: () -> Unit = {},
+    onNavigateToProfile: () -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val homeState by viewModel.homeState.collectAsState()
@@ -50,6 +51,9 @@ fun HomeScreen(
                     }
                 },
                 actions = {
+                    IconButton(onClick = onNavigateToProfile) {
+                        Icon(Icons.Default.Person, contentDescription = "Perfil")
+                    }
                     IconButton(onClick = { viewModel.refresh() }) {
                         Icon(Icons.Default.Refresh, contentDescription = "Actualizar")
                     }
