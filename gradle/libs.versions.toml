@@ -20,6 +20,7 @@ room = "2.6.1"
 ksp = "2.0.21-1.0.28"
 media3 = "1.5.0"
 accompanist = "0.36.0"
+uiGraphics = "1.9.4"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -74,6 +75,7 @@ androidx-media3-ui = { group = "androidx.media3", name = "media3-ui", version.re
 
 # Accompanist
 accompanist-permissions = { group = "com.google.accompanist", name = "accompanist-permissions", version.ref = "accompanist" }
+androidx-compose-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics", version.ref = "uiGraphics" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
