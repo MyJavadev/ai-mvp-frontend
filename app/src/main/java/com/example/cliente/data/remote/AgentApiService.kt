@@ -28,7 +28,9 @@ interface AgentApiService {
 
 @Serializable
 data class AgentRequest(
-    val prompt: String
+    val prompt: String,
+    val userId: Int? = null,
+    val context: Map<String, String>? = null
 )
 
 @Serializable
@@ -36,4 +38,3 @@ data class AgentResponse(
     val text: String? = null,
     val toolResult: JsonElement? = null // Puede ser string u objeto
 )
-

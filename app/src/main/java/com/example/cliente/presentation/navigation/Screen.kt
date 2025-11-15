@@ -3,6 +3,7 @@ package com.example.cliente.presentation.navigation
 sealed class Screen(val route: String) {
     object Setup : Screen("setup")
     object Home : Screen("home")
+    object DayPlan : Screen("day_plan")
     object StudyPathList : Screen("study_path_list")
     object StudyPathDetail : Screen("study_path_detail/{pathId}") {
         fun createRoute(pathId: String) = "study_path_detail/$pathId"
@@ -18,5 +19,5 @@ sealed class Screen(val route: String) {
     object Profile : Screen("profile")
     object Search : Screen("search")
     object AgentChat : Screen("agent_chat")
+    object Wellness : Screen("wellness")
 }
-

@@ -12,11 +12,13 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import coil.compose.AsyncImage
 import com.example.cliente.R
 
 /**
@@ -37,6 +39,8 @@ fun HomeScreen(
     onNavigateToSearch: () -> Unit = {},
     onNavigateToAgent: () -> Unit = {},
     onNavigateToProfile: () -> Unit = {},
+    onNavigateToWellness: () -> Unit = {},
+    onNavigateToDayPlan: () -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val homeState by viewModel.homeState.collectAsState()
@@ -72,6 +76,13 @@ fun HomeScreen(
                 CircularProgressIndicator()
             }
         } else {
+            val wellnessMood = homeState.dashboard?.nextModule ?: "Tu próximo objetivo"
+            val wellnessEnergy = homeState.dashboard?.currentStreak
+                ?.takeIf { it > 0 }
+                ?.let { "$it días" } ?: "--"
+            val wellnessStress = homeState.dashboard?.completedModules
+                ?.let { "$it completados" } ?: "--"
+
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
@@ -196,6 +207,16 @@ fun HomeScreen(
                     )
                 }
 
+                item {
+                    WellnessHighlightCard(
+                        modifier = Modifier.fillMaxWidth(),
+                        mood = wellnessMood,
+                        energy = wellnessEnergy,
+                        stress = wellnessStress,
+                        onClick = onNavigateToWellness
+                    )
+                }
+
                 // Grid de botones con iconos personalizados
                 item {
                     Column(
@@ -209,7 +230,7 @@ fun HomeScreen(
                         ) {
                             CustomIconButton(
                                 imageRes = R.drawable.mi_dia,
-                                onClick = { /* TODO: Implementar Mi Día */ },
+                                onClick = onNavigateToDayPlan,
                                 modifier = Modifier.weight(1f)
                             )
                             CustomIconButton(
@@ -231,7 +252,7 @@ fun HomeScreen(
                             )
                             CustomIconButton(
                                 imageRes = R.drawable.salud_mental,
-                                onClick = { /* TODO: Implementar Salud Mental */ },
+                                onClick = onNavigateToWellness,
                                 modifier = Modifier.weight(1f)
                             )
                         }
@@ -486,6 +507,18 @@ fun AchievementCard(
 
             Spacer(modifier = Modifier.width(16.dp))
 
+            imageUrl?.let {
+                AsyncImage(
+                    model = it,
+                    contentDescription = "Logro",
+                    modifier = Modifier
+                        .size(56.dp)
+                        .clip(RoundedCornerShape(16.dp)),
+                    contentScale = ContentScale.Crop
+                )
+                Spacer(modifier = Modifier.width(16.dp))
+            }
+
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = title,
@@ -503,5 +536,3 @@ fun AchievementCard(
         }
     }
 }
-
-

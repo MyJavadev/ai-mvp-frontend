@@ -229,15 +229,15 @@ fun ModuleContent(
                 contentDescription = module.title,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(280.dp),
-                contentScale = ContentScale.Fit
+                    .height(340.dp),
+                contentScale = ContentScale.Inside
             )
         } else {
             Surface(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(280.dp),
-                color = MaterialTheme.colorScheme.primaryContainer
+                    .height(340.dp),
+                color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.08f)
             ) {
                 Box(contentAlignment = Alignment.Center) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -264,19 +264,21 @@ fun ModuleContent(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+            // Mostrar título y descripción en una tarjeta más ligera (sin fondo pesado)
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant
-                )
+                    containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.03f)
+                ),
+                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
             ) {
-                Column(modifier = Modifier.padding(16.dp)) {
+                Column(modifier = Modifier.padding(12.dp)) {
                     Text(
                         text = module.title,
                         style = MaterialTheme.typography.headlineMedium,
                         fontWeight = FontWeight.Bold
                     )
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text = module.description,
                         style = MaterialTheme.typography.bodyLarge,
@@ -302,13 +304,14 @@ fun ModuleContent(
                 )
             }
 
-            // Card de Quiz destacado
+            // Card de Quiz destacado (diseño más minimalista)
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 onClick = { onNavigateToQuiz(module.id) },
                 colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer
-                )
+                    containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.08f)
+                ),
+                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
             ) {
                 Row(
                     modifier = Modifier
@@ -371,7 +374,7 @@ fun ModuleContent(
                         moduleDescription = module.description, // Pasar la descripción completa
                         onPlayAudio = {
                             // Enviar descripción completa del módulo con el subtema como contexto
-                            val textToSpeak = "$subtopic: ${module.description}"
+                            val textToSpeak = subtopic // enviar solo el contenido del subtema
                             onGenerateAudio(textToSpeak)
                         },
                         isAudioGenerating = ttsState.isGenerating
@@ -583,4 +586,3 @@ fun ExpandableSubtopicCard(
         }
     }
 }
-

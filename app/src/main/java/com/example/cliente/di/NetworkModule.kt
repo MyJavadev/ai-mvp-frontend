@@ -98,5 +98,13 @@ object NetworkModule {
     fun provideAgentApiService(retrofit: Retrofit): AgentApiService {
         return retrofit.create(AgentApiService::class.java)
     }
-}
 
+    @Provides
+    @Singleton
+    fun provideDayPlanApiService(retrofit: Retrofit): DayPlanApiService {
+        return retrofit.create(DayPlanApiService::class.java)
+    }
+
+    @Provides
+    fun provideWellnessApiService(retrofit: Retrofit): WellnessApiService = retrofit.create(WellnessApiService::class.java)
+}

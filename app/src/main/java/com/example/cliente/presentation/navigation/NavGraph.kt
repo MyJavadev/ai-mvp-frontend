@@ -53,6 +53,23 @@ fun NavGraph(
                 },
                 onNavigateToProfile = {
                     navController.navigate(Screen.Profile.route)
+                },
+                onNavigateToWellness = {
+                    navController.navigate(Screen.Wellness.route)
+                },
+                // Navegar a Mi Día
+                onNavigateToDayPlan = {
+                    navController.navigate(Screen.DayPlan.route)
+                }
+            )
+        }
+
+        // Day Plan Screen (Mi Día)
+        composable(Screen.DayPlan.route) {
+            com.example.cliente.presentation.home.DayPlanScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onOpenModule = { moduleId ->
+                    navController.navigate(Screen.ModuleDetail.createRoute(moduleId.toString()))
                 }
             )
         }
@@ -187,6 +204,12 @@ fun NavGraph(
                 }
             )
         }
+
+        // Wellness Screen
+        composable(Screen.Wellness.route) {
+            com.example.cliente.presentation.wellness.WellnessScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
     }
 }
-
