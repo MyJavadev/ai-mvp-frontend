@@ -1,8 +1,10 @@
 package com.example.cliente.presentation.studypath
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.cliente.data.model.StudyPathDto
+import com.example.cliente.data.repository.ProgressRepository
 import com.example.cliente.data.repository.StudyPathRepository
 import com.example.cliente.util.Resource
 import com.example.cliente.util.UserPreferences
@@ -28,9 +30,15 @@ data class CreateStudyPathState(
     val message: String? = null
 )
 
+data class ModuleCompletionUiState(
+    val completedModuleIds: Set<Int> = emptySet(),
+    val error: String? = null
+)
+
 @HiltViewModel
 class StudyPathViewModel @Inject constructor(
     private val repository: StudyPathRepository,
+    private val progressRepository: ProgressRepository,
     private val userPreferences: UserPreferences
 ) : ViewModel() {
 
@@ -49,6 +57,9 @@ class StudyPathViewModel @Inject constructor(
     private val _studyPathModulesLoading = MutableStateFlow(false)
     val studyPathModulesLoading: StateFlow<Boolean> = _studyPathModulesLoading.asStateFlow()
 
+    private val _moduleCompletionState = MutableStateFlow(ModuleCompletionUiState())
+    val moduleCompletionState: StateFlow<ModuleCompletionUiState> = _moduleCompletionState.asStateFlow()
+
     private var currentUserId: String? = null
 
     init {
@@ -58,6 +69,7 @@ class StudyPathViewModel @Inject constructor(
                 userId?.let {
                     currentUserId = it
                     getUserStudyPaths(it)
+                    it.toIntOrNull()?.let { numericId -> loadCompletedModules(numericId) }
                 }
             }
         }
@@ -138,10 +150,14 @@ class StudyPathViewModel @Inject constructor(
         repository.getStudyPath(pathId).onEach { result ->
             when (result) {
                 is Resource.Success -> {
-                    _studyPathModules.value = result.data ?: emptyList()
+                    val modules = result.data ?: emptyList()
+                    val moduleIds = modules.map { it.id }
+                    Log.d("StudyPathViewModel", "Loaded modules for path $pathId: $moduleIds")
+                    _studyPathModules.value = modules
                     _studyPathModulesLoading.value = false
                 }
                 is Resource.Error -> {
+                    Log.e("StudyPathViewModel", "Error loading modules for path $pathId: ${result.message}")
                     _studyPathModulesLoading.value = false
                     // Handle error - podría agregar un estado de error si es necesario
                 }
@@ -152,9 +168,41 @@ class StudyPathViewModel @Inject constructor(
         }.launchIn(viewModelScope)
     }
 
+    fun clearCompletionFeedback() {
+        _moduleCompletionState.value = _moduleCompletionState.value.copy(error = null)
+    }
+
+    private fun loadCompletedModules(userId: Int) {
+        progressRepository.getUserProgress(userId).onEach { result ->
+            when (result) {
+                is Resource.Success -> {
+                    val ids = result.data?.completed_modules?.map { it.module_id }?.toSet().orEmpty()
+                    Log.d("StudyPathViewModel", "Loaded completed module IDs for user $userId: $ids")
+                    _moduleCompletionState.value = _moduleCompletionState.value.copy(completedModuleIds = ids)
+                }
+                is Resource.Error -> {
+                    Log.e("StudyPathViewModel", "Error loading progress for user $userId: ${result.message}")
+                    _moduleCompletionState.value = _moduleCompletionState.value.copy(
+                        error = result.message ?: "No se pudo cargar el progreso"
+                    )
+                }
+                is Resource.Loading -> {
+                    // noop
+                }
+            }
+        }.launchIn(viewModelScope)
+    }
+
+    /**
+     * Recarga los módulos completados. Útil para actualizar la UI después de completar un módulo.
+     */
+    fun reloadCompletedModules() {
+        currentUserId?.toIntOrNull()?.let { userId ->
+            loadCompletedModules(userId)
+        }
+    }
 
     fun clearCreateState() {
         _createStudyPathState.value = CreateStudyPathState()
     }
 }
-

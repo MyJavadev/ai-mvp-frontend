@@ -5,9 +5,13 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.outlined.Circle
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -26,9 +30,27 @@ fun StudyPathDetailScreen(
 ) {
     val modules by viewModel.studyPathModules.collectAsState()
     val isLoading by viewModel.studyPathModulesLoading.collectAsState()
+    val completionState by viewModel.moduleCompletionState.collectAsState()
 
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    // Cargar módulos y progreso cuando se entra a la pantalla o cambia el pathId
     LaunchedEffect(pathId) {
         viewModel.getStudyPath(pathId)
+        viewModel.reloadCompletedModules()
+    }
+
+    // Recargar módulos completados cuando la pantalla vuelve a estar visible (onResume)
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                viewModel.reloadCompletedModules()
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
     }
 
     Scaffold(
@@ -101,6 +123,7 @@ fun StudyPathDetailScreen(
                 items(modules) { module ->
                     ModuleCard(
                         module = module,
+                        isCompleted = module.id in completionState.completedModuleIds,
                         onClick = { onNavigateToModule(module.id.toString()) }
                     )
                 }
@@ -125,7 +148,8 @@ fun StudyPathDetailScreen(
 @Composable
 fun ModuleCard(
     module: ModuleDto,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    isCompleted: Boolean
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -148,7 +172,11 @@ fun ModuleCard(
             // Icono circular con fondo suave
             Surface(
                 shape = androidx.compose.foundation.shape.CircleShape,
-                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
+                color = if (isCompleted) {
+                    MaterialTheme.colorScheme.primary.copy(alpha = 0.25f)
+                } else {
+                    MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
+                },
                 modifier = Modifier.size(48.dp)
             ) {
                 Box(
@@ -156,9 +184,17 @@ fun ModuleCard(
                     modifier = Modifier.fillMaxSize()
                 ) {
                     Icon(
-                        imageVector = Icons.Outlined.Circle,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
+                        imageVector = if (isCompleted) {
+                            Icons.Default.CheckCircle
+                        } else {
+                            Icons.Outlined.Circle
+                        },
+                        contentDescription = if (isCompleted) "Completado" else "Pendiente",
+                        tint = if (isCompleted) {
+                            MaterialTheme.colorScheme.primary
+                        } else {
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
+                        },
                         modifier = Modifier.size(24.dp)
                     )
                 }
@@ -169,12 +205,14 @@ fun ModuleCard(
             Column(
                 modifier = Modifier.weight(1f)
             ) {
-                Text(
-                    text = module.title,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = module.title,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
 
                 Spacer(modifier = Modifier.height(6.dp))
 
@@ -203,7 +241,16 @@ fun ModuleCard(
                     }
                 }
             }
+
+            Column(
+                horizontalAlignment = Alignment.End,
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+
+                TextButton(onClick = onClick) {
+                    Text("Ver módulo")
+                }
+            }
         }
     }
 }
-

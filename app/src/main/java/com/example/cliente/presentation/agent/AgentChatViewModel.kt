@@ -7,8 +7,7 @@ import com.example.cliente.data.repository.AgentRepository
 import com.example.cliente.util.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
-import kotlinx.serialization.json.JsonPrimitive
-import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.*
 import javax.inject.Inject
 
 data class ChatMessage(
@@ -16,7 +15,8 @@ data class ChatMessage(
     val text: String,
     val isUser: Boolean,
     val timestamp: Long = System.currentTimeMillis(),
-    val toolResult: String? = null
+    val toolResult: String? = null,
+    val metadata: String? = null
 )
 
 data class AgentChatState(
@@ -77,7 +77,7 @@ class AgentChatViewModel @Inject constructor(
                         val agentMessage = formatAgentResponse(response)
                         addMessage(agentMessage)
                     }
-                    _chatState.value = _chatState.value.copy(isLoading = false)
+                    _chatState.value = _chatState.value.copy(isLoading = false, error = null)
                 }
                 is Resource.Error -> {
                     addMessage(
@@ -110,23 +110,11 @@ class AgentChatViewModel @Inject constructor(
                 )
             }
             response.toolResult != null -> {
-                // El agente ejecutó una herramienta
-                // toolResult puede ser string u objeto JSON
-                val toolResultText = when (response.toolResult) {
-                    is JsonPrimitive -> {
-                        // Es un valor primitivo (string, number, boolean)
-                        response.toolResult.contentOrNull ?: response.toolResult.toString()
-                    }
-                    else -> {
-                        // Es un objeto o array complejo
-                        response.toolResult.toString()
-                    }
-                }
-
+                val friendlyText = response.toolResult.prettyToolResult()
                 ChatMessage(
-                    text = toolResultText,
+                    text = friendlyText,
                     isUser = false,
-                    toolResult = null // No mostrar metadata adicional
+                    metadata = "tool"
                 )
             }
             else -> {
@@ -160,3 +148,89 @@ class AgentChatViewModel @Inject constructor(
     }
 }
 
+private fun JsonElement.prettyToolResult(): String {
+    return when (this) {
+        is JsonPrimitive -> this.contentOrNull?.ifBlank { null } ?: "La herramienta no devolvió detalles."
+        is JsonObject -> renderToolObject(this)
+        is JsonArray -> renderToolArray(this)
+        else -> toString()
+    }
+}
+
+private fun renderToolArray(array: JsonArray): String {
+    if (array.isEmpty()) return "No hay elementos para mostrar."
+    val builder = StringBuilder()
+    array.forEachIndexed { index, element ->
+        builder.appendLine("• ${index + 1}. ${element.prettyToolResult()}")
+    }
+    return builder.toString().trim()
+}
+
+private fun renderToolObject(obj: JsonObject): String {
+    val type = obj["type"]?.jsonPrimitive?.contentOrNull
+    return when (type) {
+        "tasks" -> formatTaskPayload(obj)
+        "mood_log" -> formatMoodLogPayload(obj)
+        "preferences" -> formatPreferencesPayload(obj)
+        else -> defaultObjectDescription(obj)
+    }
+}
+
+private fun formatTaskPayload(obj: JsonObject): String {
+    val items = obj["items"]?.jsonArray ?: return "No hay tareas registradas."
+    if (items.isEmpty()) {
+        return "No tienes tareas pendientes. ¿Quieres agregar alguna actividad para hoy?"
+    }
+    val builder = StringBuilder("Estas son tus tareas:")
+    items.forEachIndexed { index, element ->
+        val task = element.jsonObject
+        val title = task["title"]?.jsonPrimitive?.contentOrNull ?: "Tarea sin título"
+        val status = task["status"]?.jsonPrimitive?.contentOrNull ?: "pendiente"
+        val due = task["dueDate"]?.jsonPrimitive?.contentOrNull
+        builder.appendLine()
+        builder.append("${index + 1}. $title (${status.lowercase()}")
+        due?.let { builder.append(", vence $it") }
+        builder.append(")")
+    }
+    builder.appendLine()
+    builder.append("¿Deseas que agende algo más o marque una tarea como completa?")
+    return builder.toString().trim()
+}
+
+private fun formatMoodLogPayload(obj: JsonObject): String {
+    val mood = obj["mood"]?.jsonPrimitive?.contentOrNull ?: "sin especificar"
+    val energy = obj["energy"]?.jsonPrimitive?.contentOrNull
+    val stress = obj["stress"]?.jsonPrimitive?.contentOrNull
+    val note = obj["note"]?.jsonPrimitive?.contentOrNull
+    val builder = StringBuilder("Se registró tu estado de ánimo: $mood")
+    energy?.let { builder.append(", energía $it/10") }
+    stress?.let { builder.append(", estrés $it/10") }
+    note?.takeIf { it.isNotBlank() }?.let { builder.append(". Nota: $it") }
+    builder.append(". ¡Sigue escuchando a tu cuerpo!")
+    return builder.toString()
+}
+
+private fun formatPreferencesPayload(obj: JsonObject): String {
+    val likes = obj["likes"]?.jsonArray
+    val dislikes = obj["dislikes"]?.jsonArray
+    val builder = StringBuilder("Actualicé tus preferencias.")
+    likes?.takeIf { it.isNotEmpty() }?.let {
+        builder.appendLine()
+        builder.append("Te gustan: ${it.joinToString { item -> item.jsonPrimitive.contentOrNull ?: "" }}")
+    }
+    dislikes?.takeIf { it.isNotEmpty() }?.let {
+        builder.appendLine()
+        builder.append("Prefieres evitar: ${it.joinToString { item -> item.jsonPrimitive.contentOrNull ?: "" }}")
+    }
+    builder.append(". Gracias por compartirlo, así puedo sugerirte mejores actividades.")
+    return builder.toString().trim()
+}
+
+private fun defaultObjectDescription(obj: JsonObject): String {
+    return buildString {
+        appendLine("Tengo nuevos datos para ti:")
+        obj.entries.forEach { (key, value) ->
+            appendLine("- ${key.replaceFirstChar { it.uppercase() }}: ${value.prettyToolResult()}")
+        }
+    }.trim()
+}

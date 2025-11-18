@@ -2,17 +2,21 @@ package com.example.cliente.presentation.home
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PsychologyAlt
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -28,6 +32,7 @@ fun WellnessHighlightCard(
     mood: String,
     energy: String,
     stress: String,
+    status: WellnessHighlightStatus,
     onClick: () -> Unit
 ) {
     Card(
@@ -48,7 +53,20 @@ fun WellnessHighlightCard(
                 Icon(Icons.Default.PsychologyAlt, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                 Column(modifier = Modifier.weight(1f)) {
                     Text("Bienestar", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
-                    Text("Seguimiento rápido de ánimo y energía", style = MaterialTheme.typography.bodySmall)
+                    Text(
+                        when (status) {
+                            WellnessHighlightStatus.Loading -> "Cargando datos de hoy"
+                            WellnessHighlightStatus.Empty -> "Registra tu ánimo para ver el resumen"
+                            WellnessHighlightStatus.Ready -> "Seguimiento rápido de ánimo y energía"
+                        },
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
+                if (status == WellnessHighlightStatus.Loading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(20.dp),
+                        strokeWidth = 2.dp
+                    )
                 }
             }
             Spacer(modifier = Modifier.height(4.dp))
@@ -56,6 +74,14 @@ fun WellnessHighlightCard(
                 WellnessChip(label = "Estado", value = mood)
                 WellnessChip(label = "Energía", value = energy)
                 WellnessChip(label = "Estrés", value = stress)
+            }
+            if (status == WellnessHighlightStatus.Empty) {
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "Pulsa para registrar tu día",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
             Text(
                 text = "Abrir panel de bienestar",
@@ -80,3 +106,5 @@ private fun WellnessChip(label: String, value: String) {
         Text(value, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
     }
 }
+
+enum class WellnessHighlightStatus { Loading, Empty, Ready }

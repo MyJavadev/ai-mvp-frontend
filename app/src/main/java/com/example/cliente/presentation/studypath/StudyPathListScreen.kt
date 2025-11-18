@@ -25,6 +25,11 @@ fun StudyPathListScreen(
 ) {
     val state by viewModel.studyPathListState.collectAsState()
 
+    // Recargar las rutas cuando se vuelve a la pantalla para mostrar el progreso actualizado
+    LaunchedEffect(Unit) {
+        viewModel.getUserStudyPaths()
+    }
+
     // El ViewModel ahora carga automáticamente los study paths del usuario actual
 
     Scaffold(

@@ -69,8 +69,9 @@ data class CompleteModuleRequest(
 
 @Serializable
 data class CompleteModuleResponse(
+    val message: String? = null,
     val progress: ModuleProgressDto,
-    val achievements: List<AchievementDto> = emptyList()
+    val newly_awarded_achievements: List<AchievementDto> = emptyList()
 )
 
 @Serializable
@@ -94,7 +95,9 @@ data class AchievementDto(
 
 @Serializable
 data class UserProgressResponse(
-    val completedModules: List<ModuleProgressDto>,
+    val completed_modules_count: Int? = null,
+    val completed_modules: List<ModuleProgressDto>,
+    val achievements_count: Int? = null,
     val achievements: List<AchievementDto>
 )
 

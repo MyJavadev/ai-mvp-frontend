@@ -45,7 +45,8 @@ data class SearchResultModule(
     val description: String? = null,
     val content: String? = null,
     val distance: Float? = null, // Para búsqueda semántica
-    val subtopics: List<String>? = null
+    val subtopics: List<String>? = null,
+    val image_url: String? = null
 )
 
 /**

@@ -171,7 +171,7 @@ fun ProfileScreen(
                         ) {
                             StatCard(
                                 title = "Módulos Completados",
-                                value = progress.completedModules.size.toString(),
+                                value = progress.completed_modules.size.toString(),
                                 icon = Icons.Default.CheckCircle,
                                 modifier = Modifier.weight(1f)
                             )

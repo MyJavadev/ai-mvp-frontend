@@ -1,5 +1,4 @@
 package com.example.cliente.presentation.module
-
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.cliente.data.model.ModuleDto
@@ -182,7 +181,7 @@ class ModuleDetailViewModel @Inject constructor(
         val userId = currentUserId
         if (userId == null) {
             _completionState.value = ModuleCompletionState(
-                error = "Usuario no identificado"
+                error = "No se pudo identificar tu usuario. Por favor, inicia sesión nuevamente."
             )
             return
         }

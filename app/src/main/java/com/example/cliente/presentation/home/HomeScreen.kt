@@ -44,6 +44,7 @@ fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val homeState by viewModel.homeState.collectAsState()
+    val wellnessSnapshot = homeState.wellnessSnapshot
 
     Scaffold(
         topBar = {
@@ -76,12 +77,10 @@ fun HomeScreen(
                 CircularProgressIndicator()
             }
         } else {
-            val wellnessMood = homeState.dashboard?.nextModule ?: "Tu próximo objetivo"
-            val wellnessEnergy = homeState.dashboard?.currentStreak
-                ?.takeIf { it > 0 }
-                ?.let { "$it días" } ?: "--"
-            val wellnessStress = homeState.dashboard?.completedModules
-                ?.let { "$it completados" } ?: "--"
+            val wellnessMood = wellnessSnapshot?.mood?.replaceFirstChar { it.uppercase() }
+                ?: "Sin registro"
+            val wellnessEnergy = wellnessSnapshot?.energyLevel?.let { "$it/10" } ?: "--"
+            val wellnessStress = wellnessSnapshot?.stressLevel?.let { "$it/10" } ?: "--"
 
             LazyColumn(
                 modifier = Modifier
@@ -213,6 +212,11 @@ fun HomeScreen(
                         mood = wellnessMood,
                         energy = wellnessEnergy,
                         stress = wellnessStress,
+                        status = when {
+                            homeState.isWellnessLoading -> WellnessHighlightStatus.Loading
+                            homeState.wellnessSnapshot == null -> WellnessHighlightStatus.Empty
+                            else -> WellnessHighlightStatus.Ready
+                        },
                         onClick = onNavigateToWellness
                     )
                 }
